@@ -37,7 +37,10 @@ def main():
         if not pandoc: raise ValueError('Pandoc must be in PATH or RUC_TEST_PANDOC.')
         report['pandoc'] = subprocess.check_output([pandoc, '--version']).decode().splitlines()[0]
         run([sys.executable, '-m', 'pip', 'freeze'], 'pip-freeze')
-        if shutil.which('tlmgr'): run(['tlmgr', 'info', '--only-installed'], 'texlive-packages')
+        # Windows TeX Live exposes tlmgr.bat: CreateProcess needs its resolved
+        # filename, not the extensionless command accepted by an interactive shell.
+        tlmgr = shutil.which('tlmgr')
+        if tlmgr: run([tlmgr, 'info', '--only-installed'], 'texlive-packages')
         source = root/'inputs'; source.mkdir()
         (source/'main.tex').write_text('\\documentclass{article}\n\\begin{document}\\section{Fixture}Text $x^2$.\\end{document}', encoding='utf-8')
         (source/'word.md').write_text('# Fixture\n\nText with $x^2$.\n', encoding='utf-8')
