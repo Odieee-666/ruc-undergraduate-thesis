@@ -1,0 +1,34 @@
+\section{绪论}
+本节演示正文与脚注的排版。模板采用独立的元数据文件保存题名、作者、学院和指导教师等字段。正文段落以两个汉字宽度缩进，章节编号由 LaTeX 自动生成。\footnote{这是一条用于检查圆形编号与页底排版的脚注。}
+
+研究者可以通过文献引用建立与文末参考文献的对应关系，例如结构方程模型研究\cite{fornell1981evaluating}。中文文献示例见\cite{孙鲁平2016网上个性化推荐研究述评与展望}。
+
+\subsection{研究方法}
+\subsubsection{模型表示}
+\paragraph{参数与估计}
+设样本量为 $n$，线性模型及其平方损失为
+\begin{equation}\label{eq:model}
+ y_i=\alpha+\beta x_i+\varepsilon_i,\qquad
+ L(\alpha,\beta)=\frac{1}{n}\sum_{i=1}^{n}(y_i-\alpha-\beta x_i)^2.
+\end{equation}
+公式\eqref{eq:model}中的符号仅用于测试数学排版。下面的表格是人为构造的测试数据，不能作为实证结论使用。
+
+\begin{table}[htbp]\centering
+\caption{示例数据与排版检查}\label{tab:demo}
+\begin{threeparttable}
+\begin{tabular}{lrr}\toprule 项目 & 样本数 & 示例数值 \\\midrule
+甲组 & 120 & 0.25 \\
+乙组 & 135 & 0.38 \\
+丙组 & 142 & 0.41 \\\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item 注：全部数值均为排版测试数据。\end{tablenotes}
+\end{threeparttable}\end{table}
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}\draw[->] (0,0)--(5,0) node[right] {$x$};\draw[->] (0,0)--(0,2.5) node[above] {$y$};\draw[thick] (0.2,.4)--(4.5,2);\end{tikzpicture}
+\caption{线性关系的示意图}\label{fig:demo}
+\end{figure}
+表\ref{tab:demo}与图\ref{fig:demo}演示交叉引用。
+
+\section{讨论与结论}
+本模板将格式规则与论文内容分开维护。正式使用时，需要依据适用学院与年份核对具体格式，并对输入转换产生的公式、表格、注释和引用逐项检查。

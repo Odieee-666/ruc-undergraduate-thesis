@@ -1,0 +1,2 @@
+-r ../ruc-undergraduate-thesis/scripts/requirements.txt
+reportlab

@@ -1,0 +1,22 @@
+% !TEX program = xelatex
+% Profile: ruc-2021-local. See PROVENANCE.md and skill references/format-basis.md.
+\documentclass[numeric]{ructhesis}
+\input{metadata.tex}
+\input{preamble-extra.tex}
+\addbibresource{references.bib}
+\begin{document}
+\makethesiscover
+\rucfrontmatter
+\begin{cnabstract}\input{content/abstract-zh.tex}\end{cnabstract}
+\begin{enabstract}\input{content/abstract-en.tex}\end{enabstract}
+\ruccontents
+% Enable only when needed:
+% \listoffigures\clearpage
+% \listoftables\clearpage
+\rucmainmatter
+\input{content/body.tex}
+\clearpage
+\printbibliography[heading=bibintoc,title={参考文献}]
+% \rucbacksection{附录}\appendix\input{content/appendix.tex}
+% \rucbacksection{致谢}\input{content/acknowledgements.tex}
+\end{document}
