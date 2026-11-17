@@ -6,7 +6,7 @@
 
 **主要输出：可编辑的 LaTeX 工程与编译后的 PDF**
 
-**已发布旧版 v1.0.0（不含本次工作区改进）：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/ruc-undergraduate-thesis-v1.0.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.0.0) · [安装步骤](#安装到-codex)
+**v1.1.0：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.1.0/ruc-undergraduate-thesis-v1.1.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.1.0) · [安装步骤](#安装到-codex)
 
 **其他 AI 工具：** [复用方式与环境要求](#其他-ai-如何复用)
 
@@ -71,9 +71,9 @@ XeLaTeX → Biber → 重复 XeLaTeX，直至辅助文件收敛
 
 ## 安装到 Codex
 
-### 推荐：下载 v1.0.0 安装包
+### 推荐：下载 v1.1.0 安装包
 
-1. 下载 [ruc-undergraduate-thesis-v1.0.0.zip](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/ruc-undergraduate-thesis-v1.0.0.zip)。这是整理好的 skill 安装包；Release 页面中的 **Source code** 是完整仓库源码。
+1. 下载 [ruc-undergraduate-thesis-v1.1.0.zip](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.1.0/ruc-undergraduate-thesis-v1.1.0.zip)。这是整理好的 skill 安装包；Release 页面中的 **Source code** 是完整仓库源码。
 2. 解压安装包，找到其中直接包含 `SKILL.md` 的 `ruc-undergraduate-thesis` 文件夹。
 3. 将该文件夹放入 Codex 的 skills 目录：Windows 默认是 `%USERPROFILE%\.codex\skills\`，macOS/Linux 默认是 `~/.codex/skills/`。如果设置了 `CODEX_HOME`，则放入其下的 `skills/`。目录不存在时可先创建；同名 skill 已存在时，先备份并检查差异。
 4. 确认目录结构如下，不要多套一层压缩包或仓库目录：
@@ -90,7 +90,7 @@ skills/
 
 5. 在支持加载本地 skills 的 Codex 会话中使用 `$ruc-undergraduate-thesis` 调用，示例见下方“如何使用”。
 
-可下载 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/SHA256SUMS.txt) 校验安装包。版本内容见 [v1.0.0 Release](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.0.0)。
+可下载 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.1.0/SHA256SUMS.txt) 校验安装包。版本内容见 [v1.1.0 Release](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.1.0)。
 
 ### 从仓库源码安装
 
@@ -100,7 +100,7 @@ skills/
 git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
 ```
 
-将仓库**内部**的 `ruc-undergraduate-thesis` 文件夹按上述步骤放入 skills 目录，而不是复制整个仓库。默认分支可能包含 v1.0.0 之后的改动；需要固定版本时，使用上面的 v1.0.0 安装包。
+将仓库**内部**的 `ruc-undergraduate-thesis` 文件夹按上述步骤放入 skills 目录，而不是复制整个仓库。默认分支可能包含 v1.1.0 之后的改动；需要固定版本时，使用上面的 v1.1.0 安装包。
 
 安装 skill 后，仍需按下文准备 LaTeX、Pandoc、字体及 Python 依赖；安装包和仓库均不包含第三方运行时或真实论文原稿。
 
@@ -119,7 +119,7 @@ git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
 
 ### 支持 skill 的工具
 
-1. 下载上面的 v1.0.0 安装包，解压后保留整个 `ruc-undergraduate-thesis` 文件夹及其内部相对路径。
+1. 下载上面的 v1.1.0 安装包，解压后保留整个 `ruc-undergraduate-thesis` 文件夹及其内部相对路径。
 2. 按目标工具的文档，将文件夹放入其支持的 skills 目录，或通过该工具的导入入口加载。不要直接套用 Codex 的安装路径。
 3. 确认工具读取了 `SKILL.md`，并能访问 `references/`、`scripts/` 和 `assets/`。
 4. 使用目标工具自己的调用方式。`$ruc-undergraduate-thesis` 是本 README 中的 Codex 调用示例，不保证其他平台支持相同语法；`agents/openai.yaml` 是面向 Codex 的界面元数据，不是运行 Python 脚本的必需配置。
@@ -251,7 +251,7 @@ python <skill>/scripts/thesis.py render <output>/build/main.pdf <output>/review/
 
 Windows 和 Linux 使用 Python 3.10+、Pandoc 和 TeX Live；Windows 也可使用已有 MiKTeX。仓库 CI 为 `windows-2022`、`ubuntu-24.04` × Python 3.10/3.12，从空环境安装，关闭 TeX Live 缓存。依赖和安装配置参见 [.github/workflows/ci.yml](.github/workflows/ci.yml)。
 
-1. 安装 [Python](https://www.python.org/downloads/)、[Pandoc](https://pandoc.org/installing.html) 和 [TeX Live](https://tug.org/texlive/acquire-netinstall.html)，将可执行文件加入 PATH。CI 固定 TeX Live 2025 和 Pandoc 3.8.3；这两个 CI 配置版本需等待首次运行确认。已有发行版无需重复安装。
+1. 安装 [Python](https://www.python.org/downloads/)、[Pandoc](https://pandoc.org/installing.html) 和 [TeX Live](https://tug.org/texlive/acquire-netinstall.html)，将可执行文件加入 PATH。CI 固定 TeX Live 2025 和 Pandoc 3.8.3；已完成的 CI 结果和取消的组合见验证记录。已有发行版无需重复安装。
 2. 使用 TeX Live 包管理器安装 [tests/texlive-packages.txt](tests/texlive-packages.txt) 中的集合与宏包，或运行以下等价命令：
 
 ```text
@@ -273,7 +273,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 python tests/smoke_clean.py
 ```
 
-测试只生成合成输入，覆盖 TeX/DOCX/PDF 导入、失败续跑、源文件与检查点变化、真实 XeLaTeX/Biber 编译、参考文献、PDF 渲染和通用内容工具。测试资料和实际依赖版本保留在 `output/`，CI 无论成功失败都上传日志。`verified-versions.json` 只有流程完成才标为 `passed`；`pip-freeze.log` 和 TeX Live 宏包清单记录解析到的具体版本。已取得的结果见 [tests/verified-environments.md](tests/verified-environments.md)。配置 CI 不等于已验证两个平台。
+测试只生成合成输入，覆盖 TeX/DOCX/PDF 导入、失败续跑、源文件与检查点变化、真实 XeLaTeX/Biber 编译、参考文献、PDF 渲染和通用内容工具。测试资料和实际依赖版本保留在 `output/`，CI 无论成功失败都上传日志。`verified-versions.json` 只有流程完成才标为 `passed`；`pip-freeze.log` 和 TeX Live 宏包清单记录解析到的具体版本。已取得的结果见 [tests/verified-environments.md](tests/verified-environments.md)。已完成的 CI 结果和按用户要求取消的组合均在验证记录中注明。
 
 跨平台测试显式使用 Fandol/TeX Gyre 预览字体，不捆绑商业字体。正式排版仍检查 SimSun、SimHei、KaiTi、FangSong、Times New Roman、Arial、Courier New；有这些字体的机器可运行 `python tests/smoke_clean.py --strict-fonts`。Tesseract/OCR 是可选功能，其语言缺失检测有自动测试，真实 OCR 识别质量不属于上述覆盖范围。
 
