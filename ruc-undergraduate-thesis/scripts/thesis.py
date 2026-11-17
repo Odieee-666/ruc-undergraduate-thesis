@@ -10,12 +10,34 @@ import re
 import shutil
 import subprocess
 import sys
+from types import SimpleNamespace
 import zipfile
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / 'assets' / 'template'
 PROFILE = 'ruc-2021-local'
+
+
+def helper(name):
+    spec = importlib.util.spec_from_file_location('ruc_' + name, ROOT / 'scripts' / (name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def managed_import(kind):
+    def decorate(function):
+        def wrapped(args):
+            args = argparse.Namespace(**vars(args))
+            args.command = 'import-' + kind
+            return helper('import_state').Session(SimpleNamespace(**globals()), args, kind).execute(function)
+        return wrapped
+    return decorate
+
+
+def stage(args, name, action, products):
+    return args._session.step(name, action, products)
 
 
 def write_json(path, data):
@@ -148,6 +170,7 @@ def tex_structure_mask(text):
     return ''.join(result)
 
 
+@managed_import('tex')
 def import_tex(args):
     src = Path(args.source).resolve()
     text = src.read_text(encoding='utf-8-sig')
@@ -166,9 +189,11 @@ def import_tex(args):
     target = Path(args.output).resolve()
     if target == source_root or target.is_relative_to(source_root):
         raise ValueError('Use an output directory outside source-root to avoid recursive copying.')
-    dest = init_project(target, args.metadata, portable=args.portable)
-    shutil.copytree(source_root, dest / 'source', ignore=shutil.ignore_patterns(
-        '.git', 'build', '__pycache__', '*.aux', '*.log', '*.toc', '*.bcf', '*.run.xml', '*.synctex.gz'))
+    dest = args._session.initialize()
+    def copy_source():
+        shutil.copytree(source_root, dest / 'source', dirs_exist_ok=True, ignore=shutil.ignore_patterns(
+            '.git', 'build', '__pycache__', '*.aux', '*.log', '*.toc', '*.bcf', '*.run.xml', '*.synctex.gz'))
+    stage(args, 'source-copy', copy_source, ['source'])
     (dest / 'content' / 'body.tex').write_text(body, encoding='utf-8')
     (dest / 'original-preamble.tex.txt').write_text(preamble, encoding='utf-8')
     relparent = src.parent.relative_to(source_root).as_posix()
@@ -191,6 +216,7 @@ def import_tex(args):
     return {'project': str(dest), 'status': 'needs-review'}
 
 
+@managed_import('docx')
 def import_docx(args):
     src = Path(args.source).resolve()
     if src.suffix.lower() != '.docx':
@@ -224,15 +250,16 @@ def import_docx(args):
             if revisions: revision_parts[name] = revisions
         if revision_parts and args.track_changes == 'error':
             raise ValueError('Tracked changes found. Choose --track-changes accept/reject after deciding which revision to preserve.')
-    dest = init_project(args.output, args.metadata, portable=args.portable)
-    (dest / 'source').mkdir()
-    shutil.copy2(src, dest / 'source' / src.name)
+    dest = args._session.initialize()
+    (dest / 'source').mkdir(exist_ok=True)
+    stage(args, 'source-copy', lambda: (shutil.copy2(src, dest / 'source' / src.name) and None), ['source/' + src.name])
     revision = args.track_changes if args.track_changes != 'error' else 'accept'
     # JSON keeps the document structure for inspection and re-routing front/back matter.
-    log = run([pandoc, str(src), '-f', 'docx', '-t', 'json', '--track-changes=' + revision,
-               '--extract-media=media', '-o', 'source/document.json'], cwd=dest)
-    log += run([pandoc, 'source/document.json', '-f', 'json', '-t', 'latex', '--wrap=none',
-                '--top-level-division=section', '-o', 'content/body.tex'], cwd=dest)
+    (dest / 'media').mkdir(exist_ok=True)
+    log = stage(args, 'docx-ast', lambda: run([pandoc, str(src), '-f', 'docx', '-t', 'json', '--track-changes=' + revision,
+               '--extract-media=media', '-o', 'source/document.json'], cwd=dest), ['source/document.json', 'media'])
+    log += stage(args, 'docx-latex', lambda: run([pandoc, 'source/document.json', '-f', 'json', '-t', 'latex', '--wrap=none',
+                '--top-level-division=section', '-o', 'content/body.tex'], cwd=dest), ['content/body.tex'])
     (dest / 'source' / 'pandoc.log').write_text(log, encoding='utf-8')
     issues = ['Separate title, abstracts, keywords, references and back matter from imported body.',
               'Check equations, figures, table structure, captions, footnotes, heading levels and bibliography against Word.',
@@ -250,6 +277,7 @@ def import_docx(args):
     return {'project': str(dest), 'status': 'needs-review', 'counts': counts}
 
 
+@managed_import('pdf')
 def import_pdf(args):
     if args.dpi <= 0:
         raise ValueError('DPI must be greater than zero.')
@@ -264,51 +292,56 @@ def import_pdf(args):
         raise ValueError('--ocr requires Tesseract with requested language data; use rendered pages for visual transcription otherwise.')
     if args.ocr_all and not args.ocr:
         raise ValueError('--ocr-all requires --ocr.')
-    dest = init_project(args.output, args.metadata, portable=args.portable)
+    dest = args._session.initialize()
     source = dest / 'source'
-    source.mkdir()
-    shutil.copy2(src, source / src.name)
+    source.mkdir(exist_ok=True)
+    stage(args, 'source-copy', lambda: (shutil.copy2(src, source / src.name) and None), ['source/' + src.name])
     pages_dir = source / 'pages'
-    pages_dir.mkdir()
+    pages_dir.mkdir(exist_ok=True)
     pages = []
     draft = ['% PDF extraction draft: requires semantic reconstruction and page-by-page comparison.']
     issues = ['Reconstruct headings, paragraphs, abstracts and references from page images; remove recurring headers/footers.',
               'Rebuild formulas/tables and crop individual figures; full-page image inclusion is not completed conversion.',
               'Verify reading order and every page against source/pages before delivering.']
-    for index in range(len(pdf)):
-        page = pdf[index]
-        tp = page.get_textpage()
-        text = tp.get_text_range().replace('\r\n', '\n')
-        tp.close()
-        bitmap = page.render(scale=args.dpi / 72)
-        image = bitmap.to_pil()
-        name = f'page-{index+1:04d}'
-        image.save(pages_dir / (name + '.png'))
-        bitmap.close()
-        extracted = text
-        sparse = len(re.sub(r'\s', '', text)) < 40
-        method = 'text'
-        if args.ocr and (sparse or args.ocr_all):
-            text = run([ocr, pages_dir / (name + '.png'), 'stdout', '-l', args.ocr_language, '--psm', '3'], output_only=True)
-            method = 'ocr'
-        record = {'page': index + 1, 'method': method, 'text': text, 'raw_text': extracted,
-                  'sparse_text': sparse, 'image': 'pages/' + name + '.png', 'review_required': True}
-        pages.append(record)
-        (pages_dir / (name + '.txt')).write_text(text, encoding='utf-8')
-        draft.append(f'% Source PDF page {index+1}; {method}; not yet reviewed.\n')
-        if not text.strip():
-            draft.append('\\textbf{待核对：原 PDF 第 ' + str(index+1) + ' 页需要 OCR 或视觉转录。}\n')
-        else:
-            draft.extend(tex_escape(p.strip()) + '\n\n' for p in re.split(r'\n\s*\n', text) if p.strip())
-        page.close()
-    pdf.close()
+    try:
+        for index in range(len(pdf)):
+            name = f'page-{index+1:04d}'
+            def extract_page():
+                page = pdf[index]
+                try:
+                    tp = page.get_textpage()
+                    try: text = tp.get_text_range().replace('\r\n', '\n')
+                    finally: tp.close()
+                    bitmap = page.render(scale=args.dpi / 72)
+                    try: bitmap.to_pil().save(pages_dir / (name + '.png'))
+                    finally: bitmap.close()
+                    extracted = text
+                    sparse = len(re.sub(r'\s', '', text)) < 40
+                    method = 'text'
+                    if args.ocr and (sparse or args.ocr_all):
+                        text = run([ocr, pages_dir / (name + '.png'), 'stdout', '-l', args.ocr_language, '--psm', '3'], output_only=True)
+                        method = 'ocr'
+                    (pages_dir / (name + '.txt')).write_text(text, encoding='utf-8')
+                    return {'page': index + 1, 'method': method, 'text': text, 'raw_text': extracted,
+                            'sparse_text': sparse, 'image': 'pages/' + name + '.png', 'review_required': True}
+                finally: page.close()
+            record = stage(args, 'pdf-' + name, extract_page,
+                           ['source/pages/' + name + suffix for suffix in ['.png', '.txt']])
+            pages.append(record)
+            text = record['text']
+            draft.append(f'% Source PDF page {index+1}; {record["method"]}; not yet reviewed.\n')
+            if not text.strip():
+                draft.append('\\textbf{待核对：原 PDF 第 ' + str(index+1) + ' 页需要 OCR 或视觉转录。}\n')
+            else:
+                draft.extend(tex_escape(p.strip()) + '\n\n' for p in re.split(r'\n\s*\n', text) if p.strip())
+    finally: pdf.close()
     write_json(source / 'pages.json', pages)
     # Import by file path so both CLI use and importlib-based callers work.
     spec = importlib.util.spec_from_file_location('ruc_pdf_inventory', ROOT / 'scripts' / 'pdf_inventory.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     try:
-        inventory = module.inspect_pdf(src, source / 'glyphs')
+        inventory = stage(args, 'pdf-glyphs', lambda: module.inspect_pdf(src, source / 'glyphs'), ['source/glyphs'])
         flagged = [p['page'] for p in inventory['pages'] if p['flags']]
         if flagged:
             issues.append(f'Glyph/layout reconstruction flags on pages {flagged}; inspect source/glyphs/inventory.json even when text is not sparse.')
@@ -454,10 +487,8 @@ def render(args):
     return {'rendered_pages': len(pages), 'directory': str(dest), 'renderer': 'poppler' if poppler else 'pdfium', 'visual_reviewed': False}
 
 
-def doctor():
-    return {'python': sys.executable, 'tools': {x: tool(x) for x in ['xelatex', 'biber', 'latexmk', 'pandoc', 'tesseract']},
-            'python_modules': {x: importlib.util.find_spec(x) is not None for x in ['pypdfium2', 'PIL', 'pdfplumber']},
-            'profile': PROFILE, 'note': 'No installation or compilation performed.'}
+def doctor(args=None):
+    return helper('preflight').check(SimpleNamespace(**globals()), args)
 
 
 def main():
@@ -466,12 +497,18 @@ def main():
         sys.stderr.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
-    sub.add_parser('doctor')
+    p = sub.add_parser('doctor')
+    p.add_argument('--input-type', choices=['tex', 'docx', 'pdf'])
+    p.add_argument('--portable', action='store_true'); p.add_argument('--pandoc'); p.add_argument('--tesseract')
+    p.add_argument('--ocr', action='store_true'); p.add_argument('--ocr-language', default='chi_sim+eng')
+    p.add_argument('--report', help='Write machine-readable dependency report.')
     p = sub.add_parser('init')
     p.add_argument('output'); p.add_argument('--metadata'); p.add_argument('--demo', action='store_true'); p.add_argument('--portable', action='store_true')
     for kind in ['tex', 'docx', 'pdf']:
         p = sub.add_parser('import-' + kind)
         p.add_argument('source'); p.add_argument('output'); p.add_argument('--metadata'); p.add_argument('--portable', action='store_true')
+        recovery = p.add_mutually_exclusive_group()
+        recovery.add_argument('--resume', action='store_true'); recovery.add_argument('--retry', action='store_true')
         if kind == 'tex':
             p.add_argument('--source-root')
         if kind == 'docx':
@@ -486,14 +523,27 @@ def main():
     p.add_argument('pdf'); p.add_argument('output'); p.add_argument('--dpi', type=int, default=144)
     args = parser.parse_args()
     try:
-        if args.command == 'doctor': result = doctor()
-        elif args.command == 'init': result = {'project': str(init_project(args.output, args.metadata, args.demo, args.portable))}
+        if args.command == 'doctor':
+            result = doctor(args)
+            if args.report: write_json(args.report, result)
+        elif args.command == 'init':
+            environment = doctor(args)
+            if not environment['ready']:
+                raise ValueError('Dependencies missing: ' + '; '.join(x['item'] + ': ' + x['remedy'] for x in environment['missing']))
+            result = {'project': str(init_project(args.output, args.metadata, args.demo, args.portable))}
+            write_json(Path(result['project']) / 'environment.json', environment)
         elif args.command == 'build': result = build(args)
         elif args.command == 'render': result = render(args)
         else: result = globals()[args.command.replace('-', '_')](args)
         print(json.dumps(result, ensure_ascii=False, indent=2))
+        if args.command == 'doctor' and not result['ready']: return 1
     except (ValueError, RuntimeError, OSError, subprocess.TimeoutExpired) as exc:
         print(str(exc), file=sys.stderr)
+        if args.command.startswith('import-'):
+            output = Path(args.output).expanduser().resolve()
+            checkpoint = output.with_name('.' + output.name + '.import') / 'state.json'
+            if checkpoint.exists():
+                print(f'Checkpoint: {checkpoint}\nFix the cause, then repeat with --resume; use --retry to archive progress and start again.', file=sys.stderr)
         return 1
     return 0
 

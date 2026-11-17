@@ -2,7 +2,11 @@
 
 ## 运行环境
 
-Python 3.10+；编译需要 XeLaTeX、Biber、ctex、fontspec、unicode-math、tex-gyre-math、biblatex-gb7714-2015 和模板导言区所列宏包。PDF 提取/渲染需要 `pypdfium2`、`Pillow`，可用 `python -m pip install -r scripts/requirements.txt` 安装到独立环境。DOCX 需要 Pandoc。扫描件自动 OCR 可用 Tesseract，需安装 `chi_sim`、`eng` 语言数据。优先使用环境提供的 Python 和已有 TeX 安装；不把本机绝对路径写入交付模板。
+Python 3.10+；编译需要 XeLaTeX、Biber、ctex、fontspec、unicode-math、tex-gyre-math、biblatex-gb7714-2015 和模板导言区所列宏包。PDF 提取/渲染及字形清点需要 `pypdfium2`、`Pillow`、`pdfplumber`，可用 `python -m pip install -r scripts/requirements.txt` 安装到独立环境。DOCX 需要 Pandoc。扫描件自动 OCR 可用 Tesseract，需安装所选语言数据。优先使用环境提供的 Python 和已有 TeX 安装；不把本机绝对路径写入交付模板。
+
+`doctor --input-type pdf --report environment.json` 输出可读 JSON 和非零失败退出码；按需改为 `tex/docx`，或加 `--portable`、`--pandoc`、`--ocr --ocr-language chi_sim+eng`。检查程序能否启动、Python 包能否导入、TeX 搜索路径中的关键文件、字体是否能被 XeLaTeX 加载，以及模板与 Biber 的最小编译探测。临时探测目录自动清理；MiKTeX 探测禁用自动安装。报告记录版本和缺失项，不修改系统依赖。默认严格字体缺失时停止；`--portable` 是显式选择的预览配置，不会静默降级。
+
+CLI 的 `init` 和三个导入入口均自动执行环境检查；不需要另跑一套验收流程。检查针对模板与已知输入工具，后续迁移的自定义宏、额外宏包及动态资源路径仍可能需要补充依赖。
 
 Pandoc 查找顺序为显式 `--pandoc`、PATH、skill 下 tools、源码项目下 .tools、`CODEX_HOME/tools/ruc-thesis`（默认 `~/.codex/tools/ruc-thesis`）。可将官方解压版和许可证保存在最后一个位置，无需修改系统 PATH。skill 压缩包不包含第三方可执行文件。
 
@@ -24,6 +28,20 @@ Pandoc 查找顺序为显式 `--pandoc`、PATH、skill 下 tools、源码项目�
 ```
 
 直接编辑 `metadata.tex` 时可使用 LaTeX，但需正确转义 `% & _ #` 等特殊字符。`date` 不自动填当前日期；不能把格式处理日期冒充论文完成日期。
+
+## 导入失败与恢复
+
+导入到 `thesis-output` 时，先使用同级 `.thesis-output.import/project` 工作区。`state.json` 原子更新当前阶段、已完成阶段、产物校验值、输入/参数/模板版本及每次失败原因；`environment.json` 保存最近一次依赖报告。成功后将完整工程移到最终目录，并附 `import-state.json` 与 `environment.json`。同级工作区仅留下小型记录；失败初稿不会冒充最终工程。
+
+```text
+python <skill>/scripts/thesis.py import-pdf original.pdf thesis-output --resume
+python <skill>/scripts/thesis.py import-docx original.docx thesis-output --pandoc <new-pandoc-path> --resume
+python <skill>/scripts/thesis.py import-pdf revised.pdf thesis-output --retry
+```
+
+`--resume` 保持原来的输入、元数据和转换参数，只重跑未完成阶段：DOCX 保留 JSON AST 和媒体，PDF 保留已提取和渲染的页面，TeX 保留已复制的源工程。依赖和可执行文件路径允许修复；已完成产物会校验哈希。`--retry` 将旧工作区改名为 `.saved-<时间标识>` 后重新处理，不删除用户改过的文件。输入、参数、模板或脚本变化时拒绝复用旧进度，明确要求安全重试。两个选项互斥，已有最终目录始终不覆盖。
+
+同一目标的并发导入由锁文件阻止。断电或强制杀进程可能留下 `.thesis-output.import.lock`；确认其中 PID 对应的导入进程已经退出后，仅删除该锁，再用 `--resume`。普通异常会自动释放锁。工作区内文件供恢复使用；需要人工重建的编辑应在成功生成的最终工程中进行。
 
 ## TeX
 
@@ -50,6 +68,8 @@ Pandoc 查找顺序为显式 `--pandoc`、PATH、skill 下 tools、源码项目�
 数学字体、细小上下标、分式横线、不可映射字形和等宽代码即使在文字丰富的页面也需要复核。字体名称检测只产生线索，不保证发现所有数学对象。恢复分式时结合横线及上下方字符位置；上下标用基线矩阵区分，不能只按字符出现顺序或从左到右排列。跨行表达式、cases、求和上下限、根号、转置和罗马运算符须回看页图。不要把某篇论文的人工公式修正字典当作通用转换器。
 
 标题识别结合字体、字号、位置和上下文；行首“5.4 横轴……”可能只是上一行正文的延续。保留原公式、定理和图表编号，建立编号清单，检查漏号、重号与全文引用。正文物理换行重连时修复英文断词，并避免吞掉原本的连字符。代码从等宽字形横坐标恢复缩进，跨页续接后可做静态语法检查；文中运行命令是论文内容，不自动执行实验程序。
+
+代码缩进、编号候选清点和源页搜索已有 [通用恢复脚本](recovery-tools.md)，优先复用其坐标与来源记录，再在稿件工程中处理个别例外。
 
 图形裁切只覆盖单幅图的绘图区、轴刻度、图例与标签，图题另行排版；优先保留矢量。表格逐行核对数值、正负号、指数及有效位数。保留 PDF 的外部链接目标。若所有原文文献均需保留，可按原顺序显式列出 `\nocite{key1,key2,...}` 并保留正文真实引用；不要新增原文没有的作者姓名、日期或 DOI。
 

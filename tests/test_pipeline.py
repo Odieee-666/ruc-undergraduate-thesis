@@ -17,6 +17,12 @@ spec.loader.exec_module(t)
 
 
 class PipelineTests(unittest.TestCase):
+    def setUp(self):
+        # Dependency behavior is tested separately; these tests isolate import logic.
+        probe = patch.object(t, 'doctor', return_value={'ready': True, 'missing': []})
+        probe.start()
+        self.addCleanup(probe.stop)
+
     @classmethod
     def setUpClass(cls):
         (BASE / 'output').mkdir(exist_ok=True)

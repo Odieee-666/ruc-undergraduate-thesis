@@ -12,16 +12,16 @@
 \RequireXeTeX
 \LoadClass[UTF8,12pt,a4paper,fontset=none]{ctexart}
 \ifrucportable
-  \setCJKmainfont[BoldFont=FandolSong-Bold,ItalicFont=FandolKai-Regular]{FandolSong-Regular}
-  \setCJKsansfont{FandolHei-Regular}
-  \setCJKmonofont{FandolFang-Regular}
-  \setCJKfamilyfont{zhsong}{FandolSong-Regular}
-  \setCJKfamilyfont{zhhei}{FandolHei-Regular}
-  \setCJKfamilyfont{zhkai}{FandolKai-Regular}
-  \setCJKfamilyfont{zhfs}{FandolFang-Regular}
-  \setmainfont{TeX Gyre Termes}
-  \setsansfont{TeX Gyre Heros}
-  \setmonofont{TeX Gyre Cursor}
+  \setCJKmainfont[BoldFont=FandolSong-Bold.otf,ItalicFont=FandolKai-Regular.otf]{FandolSong-Regular.otf}
+  \setCJKsansfont[BoldFont=FandolHei-Bold.otf]{FandolHei-Regular.otf}
+  \setCJKmonofont{FandolFang-Regular.otf}
+  \setCJKfamilyfont{zhsong}[BoldFont=FandolSong-Bold.otf]{FandolSong-Regular.otf}
+  \setCJKfamilyfont{zhhei}[BoldFont=FandolHei-Bold.otf]{FandolHei-Regular.otf}
+  \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+  \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+  \setmainfont{texgyretermes}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+  \setsansfont{texgyreheros}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+  \setmonofont{texgyrecursor}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
   \ClassWarningNoLine{ructhesis}{PORTABLE FONTS: preview only}
 \else
   \setCJKmainfont[AutoFakeBold=2.5,ItalicFont=KaiTi]{SimSun}

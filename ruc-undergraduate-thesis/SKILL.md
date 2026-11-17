@@ -10,7 +10,7 @@ description: 将中国人民大学本科毕业论文的 TeX、Word 或 PDF 稿�
 ## 开始
 
 1. 读取 [格式依据](references/format-basis.md)，识别适用学院、年份及用户提供的补充要求。默认配置名为 `ruc-2021-local`，是用户提供的 2022 模板所记载的历史规则，不能称为最新官方标准。明确要求优先；有冲突记录来源和选择，不猜测学院要求。
-2. 在新的输出目录工作，保留输入原件。通过环境依赖工具寻找 Python；脚本入口为本 skill 的 `scripts/thesis.py`。`doctor` 报告依赖，不安装整套 TeX。优先使用已有 XeLaTeX/Biber；此工作流支持 MiKTeX 与 TeX Live。
+2. 在新的输出目录工作，保留输入原件。通过环境依赖工具寻找 Python；脚本入口为本 skill 的 `scripts/thesis.py`。导入会先检查对应输入依赖、XeLaTeX/Biber、关键宏包和实际可加载的字体；`doctor --input-type tex/docx/pdf` 可提前查看缺失项与修复建议。优先使用已有 MiKTeX/TeX Live，不自动安装依赖或替换严格字体；只有明确接受预览字体时使用 `--portable`。
 3. 按输入读取 [输入处理](references/input-workflows.md)。先清点内容再转换。TeX 迁移保留数学、引用和标签；DOCX 通过 Pandoc 保留结构；PDF 通过逐页提取、字形坐标资料、渲染及视觉核对重建，不把整页图片当作排版完成。数学密集的原生 PDF 即使能提取大量文字，也须检查上下标、分式、跨行公式和代码缩进。
 
 ## 操作
@@ -28,6 +28,10 @@ python <skill>/scripts/thesis.py render <output>/build/main.pdf <output>/review/
 ```
 
 `init --demo` 创建可编译演示，普通 `init` 创建待填稿。导入命令创建新工程，`conversion.json` 记录必须核对的事项。`build` 只证明构建和日志检查结果，不消除这些事项。
+
+导入失败时读取输出旁的 `.<output名>.import/state.json` 和 `environment.json`；修复依赖后在原命令追加 `--resume`。输入或转换参数改变、检查点被编辑时用 `--retry`，旧工作区会留作备份。最终输出目录只在导入成功后出现，已存在的工程不覆盖。详见 [输入处理](references/input-workflows.md#导入失败与恢复)。
+
+PDF 的代码缩进、公式编号清点和源页定位优先使用 `scripts/recover_content.py`，参数与局限见 [内容恢复工具](references/recovery-tools.md)。这些工具产生可追溯的候选和初稿，特定论文的公式修正仍只放在该论文工程内。
 
 转换后填写 `metadata.tex`、`content/abstract-zh.tex`、`content/abstract-en.tex` 和 `content/body.tex`，按需填写附录与致谢，并调整 `main.tex` 的图表目录开关。元数据 JSON 示例及命令说明见输入处理文档。用户已给出的事实直接使用；缺失作者、题名、学院等不得编造。
 

@@ -1,10 +1,12 @@
 # 中国人民大学本科毕业论文排版 Skill
 
-**Skill 名称：`ruc-undergraduate-thesis`**  
-**适用环境：Codex**  
+**Skill 名称：`ruc-undergraduate-thesis`**
+
+**适用环境：Codex**
+
 **主要输出：可编辑的 LaTeX 工程与编译后的 PDF**
 
-**v1.0.0：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/ruc-undergraduate-thesis-v1.0.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.0.0) · [安装步骤](#安装到-codex)
+**已发布旧版 v1.0.0（不含本次工作区改进）：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/ruc-undergraduate-thesis-v1.0.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.0.0) · [安装步骤](#安装到-codex)
 
 **其他 AI 工具：** [复用方式与环境要求](#其他-ai-如何复用)
 
@@ -143,7 +145,7 @@ git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
 python "<skill目录>/scripts/thesis.py" doctor
 ```
 
-然后在新的目录运行 `init --demo`，使用 `build` 和 `render` 检验编译、字体与页面查看能力，再处理真实论文。`doctor` 是依赖清点，不替代实际编译测试；使用 `portable` 字体预览时仍应保留字体替代提示。
+`doctor --input-type tex/docx/pdf` 检查对应输入依赖、宏包、字体和 XeLaTeX/Biber 的最小编译。导入命令也会自动执行同样检查，无需增加独立验收流程。缺失依赖会给出修复建议并停止；只有明确接受预览字体时使用 `--portable`。
 
 无论使用哪种 AI，导入初稿、构建结果和内容/视觉验收必须分别记录。复杂公式、表格、引用及原稿中无法确认的信息，仍需按本 skill 的验收规则逐项核对。
 
@@ -245,16 +247,50 @@ python <skill>/scripts/thesis.py render <output>/build/main.pdf <output>/review/
 - [数学密集 PDF 的实测经验](ruc-undergraduate-thesis/references/pdf-reconstruction-lessons.md)
 - [模板来源与许可说明](ruc-undergraduate-thesis/assets/template/PROVENANCE.md)
 
-## 开发与测试
+## 干净安装与自动测试
 
-安装 Python 测试依赖，并准备可调用的 Pandoc：
+Windows 和 Linux 使用 Python 3.10+、Pandoc 和 TeX Live；Windows 也可使用已有 MiKTeX。仓库 CI 为 `windows-2022`、`ubuntu-24.04` × Python 3.10/3.12，从空环境安装，关闭 TeX Live 缓存。依赖和安装配置参见 [.github/workflows/ci.yml](.github/workflows/ci.yml)。
 
-```sh
-python -m pip install -r tests/requirements.txt
-python tests/test_pipeline.py
+1. 安装 [Python](https://www.python.org/downloads/)、[Pandoc](https://pandoc.org/installing.html) 和 [TeX Live](https://tug.org/texlive/acquire-netinstall.html)，将可执行文件加入 PATH。CI 固定 TeX Live 2025 和 Pandoc 3.8.3；这两个 CI 配置版本需等待首次运行确认。已有发行版无需重复安装。
+2. 使用 TeX Live 包管理器安装 [tests/texlive-packages.txt](tests/texlive-packages.txt) 中的集合与宏包，或运行以下等价命令：
+
+```text
+tlmgr install scheme-basic collection-xetex collection-langchinese collection-latexrecommended collection-latexextra collection-fontsrecommended collection-bibtexextra biber tex-gyre-math
 ```
 
-测试生成的数据保存在本地 `output/`，不提交到仓库。`tests/verify_builds.py` 接受一次流程测试输出的目录，可进一步运行真实 LaTeX 构建；需要 XeLaTeX、Biber、模板宏包及字体。
+3. 在仓库根目录创建隔离 Python 环境：
+
+```text
+python -m venv .venv
+```
+
+Windows PowerShell 使用 `.venv/Scripts/python.exe`，Linux 使用 `.venv/bin/python` 执行后续命令（也可先激活环境）。以下 `python` 均指该环境的解释器：
+
+```text
+python -m pip install -r tests/requirements.txt
+python ruc-undergraduate-thesis/scripts/thesis.py doctor --input-type pdf --portable
+python -m unittest discover -s tests -p "test_*.py" -v
+python tests/smoke_clean.py
+```
+
+测试只生成合成输入，覆盖 TeX/DOCX/PDF 导入、失败续跑、源文件与检查点变化、真实 XeLaTeX/Biber 编译、参考文献、PDF 渲染和通用内容工具。测试资料和实际依赖版本保留在 `output/`，CI 无论成功失败都上传日志。`verified-versions.json` 只有流程完成才标为 `passed`；`pip-freeze.log` 和 TeX Live 宏包清单记录解析到的具体版本。已取得的结果见 [tests/verified-environments.md](tests/verified-environments.md)。配置 CI 不等于已验证两个平台。
+
+跨平台测试显式使用 Fandol/TeX Gyre 预览字体，不捆绑商业字体。正式排版仍检查 SimSun、SimHei、KaiTi、FangSong、Times New Roman、Arial、Courier New；有这些字体的机器可运行 `python tests/smoke_clean.py --strict-fonts`。Tesseract/OCR 是可选功能，其语言缺失检测有自动测试，真实 OCR 识别质量不属于上述覆盖范围。
+
+## 导入失败后继续
+
+例如导入目标为 `my-thesis`，失败进度保存在同级 `.my-thesis.import/state.json`，依赖报告位于 `environment.json`。最终目录仅在成功后生成。
+
+```text
+python ruc-undergraduate-thesis/scripts/thesis.py import-pdf original.pdf my-thesis --resume
+python ruc-undergraduate-thesis/scripts/thesis.py import-docx original.docx my-thesis --pandoc <修复后的路径> --resume
+```
+
+恢复时保留原转换参数（例如 `--portable`、DPI、OCR 语言和修订选择）。PDF 复用已完成页，DOCX 复用 AST/媒体。输入、模板、脚本或转换参数变更时，用 `--retry` 保存旧工作区后重新处理。已有最终目录不会覆盖。详细行为见 [输入处理](ruc-undergraduate-thesis/references/input-workflows.md#导入失败与恢复)。
+
+## 可复用的内容恢复工具
+
+`scripts/recover_content.py` 提供 `code`（按字形坐标恢复缩进并保留逐行来源）、`equations`（候选编号与重复/缺口清点）、`locate`（关键词对应源页与坐标）。命令、区域参数和限制见 [内容恢复工具](ruc-undergraduate-thesis/references/recovery-tools.md)。这些工具接入原来的内容核对过程；不会执行提取的代码，也不会把某篇论文的公式修正泛化。
 
 ## 来源与许可
 

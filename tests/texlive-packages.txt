@@ -1,0 +1,10 @@
+# Shared by README installation instructions and clean CI.
+scheme-basic
+collection-xetex
+collection-langchinese
+collection-latexrecommended
+collection-latexextra
+collection-fontsrecommended
+collection-bibtexextra
+biber
+tex-gyre-math
