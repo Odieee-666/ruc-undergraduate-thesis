@@ -4,6 +4,8 @@
 **适用环境：Codex**  
 **主要输出：可编辑的 LaTeX 工程与编译后的 PDF**
 
+**v1.0.0：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/ruc-undergraduate-thesis-v1.0.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.0.0) · [安装步骤](#安装到-codex)
+
 这是一个面向中国人民大学本科毕业论文的文档整理与排版 skill。它指导 Codex 将已有的 TeX、Word 或 PDF 稿件迁移到统一的论文模板中，完成内容整理、LaTeX 编译、内容比对和逐页版面检查。
 
 它由操作说明、格式依据、LaTeX 模板和辅助脚本组成。脚本负责可重复的提取、工程创建、构建与检查；模型负责理解文档结构、恢复复杂内容、处理格式冲突和查看页面。两者共同完成稿件迁移。
@@ -65,15 +67,38 @@ XeLaTeX → Biber → 重复 XeLaTeX，直至辅助文件收敛
 
 ## 安装到 Codex
 
-下载仓库 ZIP 并解压，或运行：
+### 推荐：下载 v1.0.0 安装包
+
+1. 下载 [ruc-undergraduate-thesis-v1.0.0.zip](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/ruc-undergraduate-thesis-v1.0.0.zip)。这是整理好的 skill 安装包；Release 页面中的 **Source code** 是完整仓库源码。
+2. 解压安装包，找到其中直接包含 `SKILL.md` 的 `ruc-undergraduate-thesis` 文件夹。
+3. 将该文件夹放入 Codex 的 skills 目录：Windows 默认是 `%USERPROFILE%\.codex\skills\`，macOS/Linux 默认是 `~/.codex/skills/`。如果设置了 `CODEX_HOME`，则放入其下的 `skills/`。目录不存在时可先创建；同名 skill 已存在时，先备份并检查差异。
+4. 确认目录结构如下，不要多套一层压缩包或仓库目录：
+
+```text
+skills/
+└── ruc-undergraduate-thesis/
+    ├── SKILL.md
+    ├── agents/
+    ├── assets/
+    ├── references/
+    └── scripts/
+```
+
+5. 在支持加载本地 skills 的 Codex 会话中使用 `$ruc-undergraduate-thesis` 调用，示例见下方“如何使用”。
+
+可下载 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.0.0/SHA256SUMS.txt) 校验安装包。版本内容见 [v1.0.0 Release](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.0.0)。
+
+### 从仓库源码安装
+
+需要查看测试代码或参与开发时，可以下载仓库 ZIP，或运行：
 
 ```sh
 git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
 ```
 
-将仓库内的 `ruc-undergraduate-thesis` 文件夹放到 Codex 的 skills 目录；默认位置为 `~/.codex/skills/`（Windows 为用户目录下的 `.codex\skills\`）。如果设置了 `CODEX_HOME`，使用该目录下的 `skills/`。目标结构应为 `skills/ruc-undergraduate-thesis/SKILL.md`，不要多套一层仓库目录。若同名 skill 已存在，请先备份并检查差异。
+将仓库**内部**的 `ruc-undergraduate-thesis` 文件夹按上述步骤放入 skills 目录，而不是复制整个仓库。默认分支可能包含 v1.0.0 之后的改动；需要固定版本时，使用上面的 v1.0.0 安装包。
 
-安装后，在支持加载本地 skills 的 Codex 会话中使用 `$ruc-undergraduate-thesis` 调用。LaTeX、Pandoc、字体及 Python 依赖需按下文准备；仓库不包含第三方运行时或真实论文原稿。
+安装 skill 后，仍需按下文准备 LaTeX、Pandoc、字体及 Python 依赖；安装包和仓库均不包含第三方运行时或真实论文原稿。
 
 ## 如何使用
 
