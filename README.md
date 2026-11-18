@@ -6,18 +6,6 @@
 
 **使用方法：直接复制 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 给agent即可
 
-![Uploading 图片.png…]()
-
-
-
-
-
-
-
-
-
-
-
 **主要输出：可编辑的 LaTeX 工程与编译后的 PDF**
 
 **v1.1.0：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.1.0/ruc-undergraduate-thesis-v1.1.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.1.0) · [安装步骤](#安装到-codex)
