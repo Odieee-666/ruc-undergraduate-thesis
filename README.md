@@ -2,7 +2,9 @@
 
 **Skill 名称：`ruc-undergraduate-thesis`**
 
-**适用环境：Codex**/Qoder**/harness**等agent
+**适用环境：Codex**/Qoder/harness等agent
+
+**使用方法：直接复制 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 给agent即可
 
 **主要输出：可编辑的 LaTeX 工程与编译后的 PDF**
 
