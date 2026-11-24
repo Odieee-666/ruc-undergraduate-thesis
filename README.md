@@ -2,6 +2,8 @@
 
 <p align="center"><img src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" alt="本科毕业论文封面示例，含题名、副标题及作者、学院、导师等字段" width="210"></p>
 
+这个 Skill 已经在 **Codex、DeepSeek Harness、Qoder 和 WorkBuddy** 四个 Agent 中实测过。
+
 如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
 [下载 v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0) · [Agent 实测](#agent-实测) · [安装到 Codex](#安装到-codex) · [运行依赖](#运行依赖)
