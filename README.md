@@ -1,3 +1,5 @@
+<img width="425" height="578" alt="屏幕截图 2026-11-24 140542" src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" />
+
 # 中国人民大学本科毕业论文排版 Skill
 
 **Skill 名称：`ruc-undergraduate-thesis`**
