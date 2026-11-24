@@ -2,19 +2,22 @@
 
 <p align="center"><img src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" alt="本科毕业论文封面示例，含题名、副标题及作者、学院、导师等字段" width="210"></p>
 
-这个 Skill 已经在 **Codex、DeepSeek Harness、Qoder 和 WorkBuddy** 四个 Agent 中实测过。
+各位RUCer小伙伴们大家好，你写毕业论文时候：老师是不是让你在overleaf里面编辑、让你用Latex，刷了四年手机的你很显然不知道这是啥，我写了这个skill，你只需要把我在下面如何使用里写的那句话，直接**复制**在对话框中，一键直接把你用AI写的毕业论文（bushi），继续用AI转化为高大上的符合模版、精致排版的毕业论文（上图）。
+
+**这个 Skill 已经在 **Codex、DeepSeek Harness、Qoder 和 WorkBuddy** 四个 Agent 中实测过。**（别的AI/agent应该都行）
 
 如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
 [下载 v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0) · [Agent 实测](#agent-实测) · [安装到 Codex](#安装到-codex) · [运行依赖](#运行依赖)
 
-## 如何使用
+# 如何使用
 
-**最简单的用法，是把仓库地址和你的要求一起发给 Agent。** 把下面的文件名换成自己的，附上原稿。如果学院发了当年的格式文件，也一起交给它。
+# **用法：新开一个对话（这很重要!），直接把你的论文和下面这句话 ，复制粘贴（CTRL+C/V）在对话里发给你的AI，（只用豆包的同学记得开工作模式），然后就完事儿了...** 
+（把下面的文件名换成自己的，附上原稿。如果学院发了当年的格式文件 {一般没有}，也一起交给它。）
 
-> 请读取 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 里的论文排版 Skill，把我的《毕业论文.docx》整理成人大本科毕业论文 LaTeX 工程，放到新目录里，保留原稿。编译后请对照原稿看一遍，尤其是公式编号、跨页表格和参考文献。有看不清的地方，请告诉我是原稿的哪一页。
+### > 请读取 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 里的论文排版 Skill，把我的《毕业论文.docx》整理成人大本科毕业论文 LaTeX 工程，放到新目录里，保留原稿。编译后请对照原稿看一遍，尤其是公式编号、跨页表格和参考文献。有看不清的地方，请告诉我是原稿的哪一页。
 
-在 Codex 里装好后，直接用 `$ruc-undergraduate-thesis` 调用即可。比如已有 TeX 工程时，可以说：“保留我的公式、引用键和图片，换成人大本科论文的封面和版式。”题名、作者、学院、专业、年级、学号、导师等资料按你提供的内容填写，明确要求留空的字段会保留空白。
+在 agent 里装好后，直接用 `$ruc-undergraduate-thesis` 调用即可。比如已有 TeX 工程时，可以说：“保留我的公式、引用键和图片，换成人大本科论文的封面和版式。”题名、作者、学院、专业、年级、学号、导师等资料按你提供的内容填写，明确要求留空的字段会保留空白。
 
 ## Agent 实测
 
