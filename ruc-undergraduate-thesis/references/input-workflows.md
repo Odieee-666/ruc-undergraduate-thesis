@@ -10,7 +10,7 @@ CLI 的 `init` 和三个导入入口均自动执行环境检查；不需要另�
 
 Pandoc 查找顺序为显式 `--pandoc`、PATH、skill 下 tools、源码项目下 .tools、`CODEX_HOME/tools/ruc-thesis`（默认 `~/.codex/tools/ruc-thesis`）。可将官方解压版和许可证保存在最后一个位置，无需修改系统 PATH。skill 压缩包不包含第三方可执行文件。
 
-编译器使用 argv 参数调用，工作目录固定为新工程，默认关闭 shell escape。`latexmk` 可用时可运行 `latexmk -xelatex -outdir=build main.tex`；Windows 上 latexmk 可能因缺少 Perl 不可用，因此脚本提供 XeLaTeX → Biber → 重复 XeLaTeX 的等价有界序列，最多四次后处理，比较辅助文件确保收敛。
+在工程目录运行 `build` 时，脚本读取当前 XeLaTeX 的版本。MiKTeX 的每遍编译均带 `--disable-installer`。各发行版均关闭 shell escape。成功构建运行 3～5 遍 XeLaTeX，首遍后若生成 `.bcf` 则调用 Biber，再比较辅助文件直至收敛。每条子命令默认限时 180 秒，可用 `build <工程目录> --timeout <秒数>` 调整。失败时查看 `build/build-report.json` 和 `build/build-transcript.txt` 中的命令、缺失文件名或超时时长。
 
 可选依赖应在用户环境或独立环境中安装，不修改只读的 Codex 捆绑运行时。Pandoc 官方安装入口：https://pandoc.org/installing.html 。操作依据：https://pandoc.org/MANUAL.html 。Pandoc 是结构转换工具，复杂表格等不保证无损。
 
@@ -39,7 +39,7 @@ python <skill>/scripts/thesis.py import-docx original.docx thesis-output --pando
 python <skill>/scripts/thesis.py import-pdf revised.pdf thesis-output --retry
 ```
 
-`--resume` 保持原来的输入、元数据和转换参数，只重跑未完成阶段：DOCX 保留 JSON AST 和媒体，PDF 保留已提取和渲染的页面，TeX 保留已复制的源工程。依赖和可执行文件路径允许修复；已完成产物会校验哈希。`--retry` 将旧工作区改名为 `.saved-<时间标识>` 后重新处理，不删除用户改过的文件。输入、参数、模板或脚本变化时拒绝复用旧进度，明确要求安全重试。两个选项互斥，已有最终目录始终不覆盖。
+`--resume` 保持原来的输入、元数据和转换参数，只重跑未完成阶段：DOCX 保留 JSON AST 和媒体，PDF 保留已提取和渲染的页面，TeX 保留已复制的源工程和已完成的 UTF-8 工作副本。依赖和可执行文件路径允许修复；已完成产物会校验哈希。`--retry` 将旧工作区改名为 `.saved-<时间标识>` 后重新处理，不删除用户改过的文件。输入、参数、模板或脚本变化时拒绝复用旧进度，明确要求安全重试。两个选项互斥，已有最终目录始终不覆盖。
 
 同一目标的并发导入由锁文件阻止。断电或强制杀进程可能留下 `.thesis-output.import.lock`；确认其中 PID 对应的导入进程已经退出后，仅删除该锁，再用 `--resume`。普通异常会自动释放锁。工作区内文件供恢复使用；需要人工重建的编辑应在成功生成的最终工程中进行。
 
@@ -48,6 +48,10 @@ python <skill>/scripts/thesis.py import-pdf revised.pdf thesis-output --retry
 `import-tex <main.tex> <new-output> [--source-root <project-root>]` 保存源工程，抽取 document 环境正文，导言区另存 `original-preamble.tex.txt`。输出应位于输入工程目录之外，避免递归复制。只需可编译模板时直接 `init`。
 
 导入是保守的初始迁移，不是任意 TeX 解析器：查找 document 边界时跳过注释、标准 `\verb` 和常见逐字环境；复杂宏生成的边界、自定义逐字环境或 catcode 修改仍需要人工/模型读取。正文按原文切片，保留注释及换行，避免改变 `%` 抑制空格的语义；原始文件完整保留。迁移自定义宏和必要宏包到 `preamble-extra.tex`，不要照搬旧 documentclass、geometry、fontspec、fancyhdr、titlesec、bibliography 样式。保留内容中的数学环境、标签与引用键。处理嵌套 input 的相对路径时以实际编译结果验证；绝对路径和目录外资源需主动收集到工程并改为相对路径。
+
+入口、静态 `\input` / `\include` 章节和本地 `\addbibresource` 文献库逐文件严格解码。优先读取 UTF-8（可带 BOM），仅在无 BOM 且 UTF-8 无效时尝试 GB18030。回退提示对应文件需核对中文。损坏文件的错误位置按从 0 起算的字节偏移报告。
+
+`source/` 保存原始字节。正文在 `content/body.tex`，需要转码或改写路径的依赖在 `tex-work/` 下保留原目录层次，其余资源可直接从 `source/` 引用。`conversion.json` 的 `details.files` 逐项列出源相对路径、所用解码器和工作路径。静态路径先按入口目录查找，再检查引用文件所在目录。宏生成的路径、越界引用、显式编码命令和原稿宏包须按记录中的文件与行号核对。导言区的自定义命令仍需人工迁移。
 
 将原封面字段、摘要、关键词和正文正确分离，删除旧封面与旧目录生成命令。将 bibliography/thebibliography 整理为当前工程一致的引用方法，不能同时保留两套参考文献输出。原始 class-specific 宏可能需要适配；每次修改后编译。
 
@@ -94,4 +98,4 @@ xelatex -no-shell-escape -interaction=nonstopmode -halt-on-error -output-directo
 xelatex -no-shell-escape -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 ```
 
-手工命令前先创建 build 目录。需要提交源文件时应包含 `ructhesis.cls`、main/metadata/preamble、content、assets、实际媒体与 bib 数据、PROVENANCE.md，不依赖 skill 安装路径。
+手工命令前先创建 build 目录。在 MiKTeX 上给每条 xelatex 命令加上 `--disable-installer`。需要提交源文件时应包含 `ructhesis.cls`、main/metadata/preamble、content、assets、实际媒体与 bib 数据、PROVENANCE.md，不依赖 skill 安装路径。

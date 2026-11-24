@@ -105,7 +105,7 @@ class PipelineTests(unittest.TestCase):
         dest = self.root / 'tex-import'
         t.import_tex(self.args(src / 'main.tex', dest, source_root=None))
         self.assertEqual((src / 'section.tex').read_bytes(), (dest / 'source/section.tex').read_bytes())
-        self.assertIn(r'\input{section}', (dest / 'content/body.tex').read_text())
+        self.assertIn(r'\input{source/section.tex}', (dest / 'content/body.tex').read_text())
         self.assertIn(r'\newcommand{\custom}', (dest / 'original-preamble.tex.txt').read_text())
         self.assertEqual(t.read_json(dest / 'conversion.json')['status'], 'needs-review')
         with self.assertRaises(ValueError):
@@ -227,7 +227,7 @@ class PipelineTests(unittest.TestCase):
     def test_failed_build_records_failing_command_output(self):
         project=t.init_project(self.root/'failed-build')
         failure='Command failed (1): xelatex\n! Undefined control sequence: \\badmacro'
-        with patch.object(t,'tool',side_effect=lambda name:name),patch.object(t,'run',side_effect=RuntimeError(failure)):
+        with patch.object(t,'tool',side_effect=lambda name:name),patch.object(t,'run',side_effect=['TeX Live', RuntimeError(failure)]):
             with self.assertRaises(RuntimeError):t.build(argparse.Namespace(project=project,strict=True,timeout=5))
         self.assertIn('badmacro',(project/'build/build-transcript.txt').read_text(encoding='utf-8'))
         self.assertEqual(t.read_json(project/'build/build-report.json')['status'],'failed')

@@ -73,7 +73,7 @@ def tool(name, explicit=None):
     return None
 
 
-def run(argv, cwd=None, timeout=180, output_only=False):
+def run(argv, cwd=None, timeout=180, output_only=False, full_output=False):
     env = os.environ.copy()
     # Windows Perl/Biber does not understand the Unix C.UTF-8 locale.
     if os.name == 'nt':
@@ -83,7 +83,9 @@ def run(argv, cwd=None, timeout=180, output_only=False):
     output = p.stdout.decode('utf-8', errors='replace')
     if p.returncode:
         error = (p.stderr or b'').decode('utf-8', errors='replace')
-        raise RuntimeError(f'Command failed ({p.returncode}): {argv[0]}\n{output[-6000:]}\n{error[-2000:]}')
+        if not full_output:
+            output, error = output[-6000:], error[-2000:]
+        raise RuntimeError(f'Command failed ({p.returncode}): {argv[0]}\n{output}\n{error}')
     return output
 
 
@@ -173,16 +175,6 @@ def tex_structure_mask(text):
 @managed_import('tex')
 def import_tex(args):
     src = Path(args.source).resolve()
-    text = src.read_text(encoding='utf-8-sig')
-    clean = tex_structure_mask(text)
-    begin = re.search(r'\\begin\s*\{document\}', clean)
-    end = re.search(r'\\end\s*\{document\}', clean)
-    if bool(begin) != bool(end) or (begin and end.start() < begin.end()):
-        raise ValueError('Unbalanced document environment; inspect source before migration.')
-    # Comments can suppress whitespace and must survive in the compiled body.
-    body = text[begin.end():end.start()] if begin else text
-    preamble = text[:begin.start()] if begin else ''
-    preamble_structure = clean[:begin.start()] if begin else ''
     source_root = Path(args.source_root).resolve() if args.source_root else src.parent
     if not src.is_relative_to(source_root):
         raise ValueError('Source must be inside --source-root.')
@@ -194,25 +186,14 @@ def import_tex(args):
         shutil.copytree(source_root, dest / 'source', dirs_exist_ok=True, ignore=shutil.ignore_patterns(
             '.git', 'build', '__pycache__', '*.aux', '*.log', '*.toc', '*.bcf', '*.run.xml', '*.synctex.gz'))
     stage(args, 'source-copy', copy_source, ['source'])
-    (dest / 'content' / 'body.tex').write_text(body, encoding='utf-8')
-    (dest / 'original-preamble.tex.txt').write_text(preamble, encoding='utf-8')
-    relparent = src.parent.relative_to(source_root).as_posix()
-    prefix = 'source/' + (relparent + '/' if relparent != '.' else '')
-    extra = ('% Review original-preamble.tex.txt; migrate required macros without old layout settings.\n'
-             '\\graphicspath{{' + prefix + '}}\n'
-             '\\makeatletter\n\\def\\input@path{{' + prefix + '}}\n\\makeatother\n')
-    bibmatches = re.finditer(r'\\addbibresource(?:\[[^]]*\])?\{([^}]+)\}', preamble_structure)
-    bibfiles = [preamble[m.start(1):m.end(1)] for m in bibmatches]
-    for bib in bibfiles:
-        if Path(bib).is_absolute() or '..' in Path(bib).parts:
-            continue
-        extra += '\\addbibresource{' + prefix + bib.replace('\\', '/') + '}\n'
-    (dest / 'preamble-extra.tex').write_text(extra, encoding='utf-8')
+    relative = src.relative_to(source_root)
+    migrated = helper('tex_import').Migration(dest, source_root, relative, tex_structure_mask, args._session).run()
     issues = ['Check original-preamble.tex.txt and migrate needed macros/packages.',
               'Move old cover, abstracts, TOC and back matter out of content/body.tex; do not duplicate them.',
               'Verify included files, bibliography commands, figure paths, labels and citations.',
               'Populate metadata and both abstracts from the source; never invent missing information.']
-    report_import(dest, src, 'tex', issues, {'copied_source_root': str(source_root), 'main_relative': str(src.relative_to(source_root))})
+    report_import(dest, src, 'tex', issues + migrated['issues'], {
+        'copied_source_root': str(source_root), 'main_relative': relative.as_posix(), 'files': migrated['files']})
     return {'project': str(dest), 'status': 'needs-review'}
 
 
@@ -389,24 +370,30 @@ def build(args):
     report = {'profile': PROFILE, 'status': 'failed', 'commands': [], 'diagnostics': [],
               'visual_reviewed': False, 'content_reviewed': False}
     transcript = []
-    engine = [xelatex, '-no-shell-escape', '-interaction=nonstopmode', '-halt-on-error',
-              '-file-line-error', '-synctex=1', '-output-directory=build', 'main.tex']
+    def invoke(command):
+        report['commands'].append(command)
+        transcript.append('$ ' + subprocess.list2cmdline(command))
+        output = run(command, cwd=project, timeout=args.timeout, full_output=True)
+        transcript.append(output)
+        return output
+
     try:
         if not xelatex or not biber:
             raise ValueError('XeLaTeX and Biber required. Run doctor; use an existing MiKTeX/TeX Live installation.')
+        version = invoke([xelatex, '--version'])
+        engine = helper('preflight').engine_command(xelatex, version)
+        engine += ['-no-shell-escape', '-interaction=nonstopmode', '-halt-on-error',
+                   '-file-line-error', '-synctex=1', '-output-directory=build', 'main.tex']
         # A bounded explicit sequence works on Windows even when latexmk has no Perl.
         # Hash auxiliaries to finish only once references/TOC have converged.
-        report['commands'].append(engine)
-        transcript.append(run(engine, cwd=project, timeout=args.timeout))
+        invoke(engine)
         bcf = out / 'main.bcf'
         if bcf.exists():
             cmd = [biber, '--input-directory=build', '--output-directory=build', 'main']
-            report['commands'].append(cmd)
-            transcript.append(run(cmd, cwd=project, timeout=args.timeout))
+            invoke(cmd)
         previous = None
         for _ in range(4):
-            report['commands'].append(engine)
-            transcript.append(run(engine, cwd=project, timeout=args.timeout))
+            invoke(engine)
             digest = hashlib.sha256(b''.join(p.read_bytes() for p in sorted(out.glob('main.*'))
                                            if p.suffix in {'.aux', '.toc', '.out', '.lof', '.lot'})).hexdigest()
             if digest == previous:
@@ -435,12 +422,25 @@ def build(args):
             raise RuntimeError('Strict check failed: inspect build-report.json diagnostics.')
     except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired) as exc:
         report['status'] = 'failed'
-        report['error'] = str(exc)
-        transcript.append(str(exc))
+        message = str(exc)
+        command = report['commands'][-1] if report['commands'] else None
         if isinstance(exc, subprocess.TimeoutExpired):
+            message = f'{subprocess.list2cmdline(command)} timed out after {exc.timeout} seconds. Adjust build --timeout.'
             for output in (exc.stdout, exc.stderr):
                 if output:
                     transcript.append(output.decode('utf-8', errors='replace') if isinstance(output, bytes) else output)
+            report['diagnostics'].append({'kind': 'timeout', 'command': command, 'seconds': exc.timeout})
+        elif command and command[0] == xelatex and 'main.tex' in command:
+            missing = re.search(r"""File ['`"]([^'`"\n]+)['`"] not found""", message, re.I)
+            if missing:
+                manager = 'MiKTeX Console' if '--disable-installer' in command else 'the TeX distribution package manager (tlmgr for TeX Live)'
+                remedy = f'Install the package providing {missing[1]} with {manager}, or restore the local file.'
+                message += '\n' + remedy
+                report['diagnostics'].append({'kind': 'missing-file', 'file': missing[1], 'command': command, 'remedy': remedy})
+        report['error'] = message
+        transcript.append(message)
+        if message != str(exc):
+            raise RuntimeError(message) from exc
         raise
     finally:
         write_json(out / 'build-report.json', report)

@@ -14,6 +14,10 @@ PORTABLE_FONTS = ['FandolSong-Regular.otf', 'FandolSong-Bold.otf', 'FandolHei-Re
                   for style in ['regular', 'bold', 'italic', 'bolditalic']]
 
 
+def engine_command(path, version):
+    return [path, '--disable-installer'] if 'miktex' in version.lower() else [path]
+
+
 def check(api, args=None):
     kind = getattr(args, 'input_type', None) or getattr(args, 'command', '').removeprefix('import-')
     portable = getattr(args, 'portable', False)
@@ -31,8 +35,10 @@ def check(api, args=None):
         try:
             path = api.tool(name, getattr(args, name, None))
             if not path: raise ValueError('executable not found')
-            version = api.run([path, '--version'], timeout=30).splitlines()[0]
-            report['tools'][name] = {'path': path, 'version': version}
+            version = api.run([path, '--version'], timeout=30)
+            report['tools'][name] = {'path': path, 'version': version.splitlines()[0]}
+            if name == 'xelatex':
+                engine = engine_command(path, version)
         except Exception as exc:
             missing(name, exc, f'Install/configure {name} in PATH (or its documented explicit option).')
     if kind == 'pdf':
@@ -82,8 +88,6 @@ def check(api, args=None):
                 probe += f'\\IfFontExistsTF{{{font}}}{{\\typeout{{RUC-FONT-{i}-OK}}}}{{\\typeout{{RUC-FONT-{i}-MISSING}}}}\n'
             probe += '\\begin{document}Dependency probe.\\end{document}\n'
             (root / 'probe.tex').write_text(probe, encoding='utf-8')
-            engine = [report['tools']['xelatex']['path']]
-            if 'miktex' in report['tools']['xelatex']['version'].lower(): engine.append('--disable-installer')
             try:
                 output = api.run(engine + ['-no-shell-escape', '-interaction=nonstopmode', '-halt-on-error', 'probe.tex'], cwd=root)
                 for i, font in enumerate(fonts):
