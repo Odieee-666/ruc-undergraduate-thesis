@@ -1,5 +1,7 @@
 # 中国人民大学本科毕业论文排版 Skill
 
+<p align="center"><img src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" alt="本科毕业论文封面示例，含题名、副标题及作者、学院、导师等字段" width="210"></p>
+
 如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
 [下载 v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0) · [Agent 实测](#agent-实测) · [安装到 Codex](#安装到-codex) · [运行依赖](#运行依赖)
@@ -36,8 +38,6 @@
 PDF 重排后页码可能变化。比如项目早期迁移过一篇 51 页的数学论文，重排后为 45 页，其中有 101 个编号公式、9 张表、6 幅矢量图和 16 条参考文献。这个案例做了内容比对、逐页查看，也验证了把工程解压到新目录后能独立编译。[数学论文重建实录](ruc-undergraduate-thesis/references/pdf-reconstruction-lessons.md)
 
 ## 模板提供的功能
-
-<p align="center"><img src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" alt="本科毕业论文封面示例，含题名、副标题及作者、学院、导师等字段" width="210"></p>
 
 封面可填写题名、副标题、作者、学院、专业、年级、学号、导师、成绩、日期和论文编码。正文从中英文摘要和关键词开始，支持罗马数字前置页码、自动目录、可选图表目录和四级标题。
 
