@@ -193,7 +193,8 @@ def import_tex(args):
               'Verify included files, bibliography commands, figure paths, labels and citations.',
               'Populate metadata and both abstracts from the source; never invent missing information.']
     report_import(dest, src, 'tex', issues + migrated['issues'], {
-        'copied_source_root': str(source_root), 'main_relative': relative.as_posix(), 'files': migrated['files']})
+        'copied_source_root': str(source_root), 'main_relative': relative.as_posix(),
+        'files': migrated['files'], 'include_aux_dirs': migrated['include_aux_dirs']})
     return {'project': str(dest), 'status': 'needs-review'}
 
 
@@ -380,6 +381,16 @@ def build(args):
     try:
         if not xelatex or not biber:
             raise ValueError('XeLaTeX and Biber required. Run doctor; use an existing MiKTeX/TeX Live installation.')
+        conversion = project / 'conversion.json'
+        if conversion.exists():
+            record = read_json(conversion)
+            report['conversion_status'] = record['status']
+            # TeX Live opens \include's per-chapter .aux under -output-directory.
+            for relative in record.get('details', {}).get('include_aux_dirs', []):
+                directory = (out / relative).resolve()
+                if not directory.is_relative_to(out.resolve()):
+                    raise ValueError(f'Invalid include auxiliary directory: {relative}')
+                directory.mkdir(parents=True, exist_ok=True)
         version = invoke([xelatex, '--version'])
         engine = helper('preflight').engine_command(xelatex, version)
         engine += ['-no-shell-escape', '-interaction=nonstopmode', '-halt-on-error',
@@ -414,9 +425,6 @@ def build(args):
         report['pdf'] = str(out / 'main.pdf')
         report['pdf_sha256'] = hashlib.sha256((out / 'main.pdf').read_bytes()).hexdigest()
         report['status'] = 'compiled-with-warnings' if report['diagnostics'] else 'compiled'
-        conversion = project / 'conversion.json'
-        if conversion.exists():
-            report['conversion_status'] = read_json(conversion)['status']
         report['delivery_status'] = 'needs-content-and-visual-review'
         if args.strict and report['diagnostics']:
             raise RuntimeError('Strict check failed: inspect build-report.json diagnostics.')

@@ -66,6 +66,7 @@ class TexMigrationTests(unittest.TestCase):
             self.assertEqual((self.output/'source'/name).read_bytes(), data)
         record = t.read_json(self.output/'conversion.json')
         files = {f['source_path']: f for f in record['details']['files']}
+        self.assertEqual(record['details']['include_aux_dirs'], ['tex-work/paper/甲'])
         self.assertEqual(len(record['details']['files']), 5)
         self.assertNotIn('paper/bad.tex', files)
         read = lambda name: (self.output/name).read_text(encoding='utf-8')

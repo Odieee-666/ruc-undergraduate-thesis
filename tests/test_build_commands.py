@@ -27,6 +27,8 @@ class BuildCommandsTests(unittest.TestCase):
             return t.main()
 
     def test_doctor_and_standalone_build_use_selected_engine(self):
+        t.write_json(self.project/'conversion.json',
+                     {'status': 'needs-review', 'details': {'include_aux_dirs': ['tex-work/甲']}})
         for distro, is_miktex, timeout in [('MiKTeX', True, 180), ('TeX Live', False, 9)]:
             with self.subTest(distro=distro):
                 version = f'XeTeX test engine\nDistribution: {distro}\n'
@@ -40,6 +42,7 @@ class BuildCommandsTests(unittest.TestCase):
                     if command[-1] == 'probe.tex':
                         return '\n'.join(f'RUC-FONT-{i}-OK' for i in range(8))
                     if command[-1] == 'main.tex':
+                        self.assertTrue((self.out/'tex-work/甲').is_dir())
                         for name in ('main.pdf', 'main.log', 'main.bcf', 'main.aux'):
                             (self.out/name).touch()
                     return ''

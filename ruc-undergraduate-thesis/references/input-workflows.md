@@ -98,4 +98,4 @@ xelatex -no-shell-escape -interaction=nonstopmode -halt-on-error -output-directo
 xelatex -no-shell-escape -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 ```
 
-手工命令前先创建 build 目录。在 MiKTeX 上给每条 xelatex 命令加上 `--disable-installer`。需要提交源文件时应包含 `ructhesis.cls`、main/metadata/preamble、content、assets、实际媒体与 bib 数据、PROVENANCE.md，不依赖 skill 安装路径。
+手工指定输出目录时，先在其中建立 `details.include_aux_dirs` 列出的章节子目录，供 TeX Live 写入各章的 .aux 文件。脚本 `build` 会自动建立这些目录。在 MiKTeX 上给每条 xelatex 命令加上 `--disable-installer`。需要提交源文件时应包含 `ructhesis.cls`、main/metadata/preamble、content、assets、实际媒体与 bib 数据、PROVENANCE.md，不依赖 skill 安装路径。

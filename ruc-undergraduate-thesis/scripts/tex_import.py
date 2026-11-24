@@ -35,6 +35,7 @@ class Migration:
         self.issues = []
         self.active = set()
         self.bibliography = []
+        self.include_dirs = set()
         self.preamble = ''
 
     def resolve(self, value, parent, name):
@@ -123,6 +124,7 @@ class Migration:
             else:
                 work = self.convert(target, bib=name == 'addbibresource')
             if name == 'include' and work.endswith('.tex'):
+                self.include_dirs.add(Path(work).parent.as_posix())
                 work = work[:-4]  # LaTeX adds the extension to include files.
             if arg.re == PLAIN_INPUT:
                 work = '{' + work + '}'
@@ -149,4 +151,5 @@ class Migration:
             (self.project / 'preamble-extra.tex').write_text(
                 extra + ''.join(cmd + '\n' for cmd in self.bibliography), encoding='utf-8')
         self.session.step('tex-preamble', write_preamble, ['original-preamble.tex.txt', 'preamble-extra.tex'])
-        return {'files': list(self.files.values()), 'issues': self.issues}
+        return {'files': list(self.files.values()), 'include_aux_dirs': sorted(self.include_dirs),
+                'issues': self.issues}
