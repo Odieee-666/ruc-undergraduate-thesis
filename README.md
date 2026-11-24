@@ -1,86 +1,72 @@
 # 中国人民大学本科毕业论文排版 Skill
 
-**Skill 名称：`ruc-undergraduate-thesis`** <img width="210" height="290" alt="屏幕截图 2026-11-24 140542" src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" />
+如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
-**适用环境：Codex/Qoder/harness等agent
- 
-##**使用方法：直接复制 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 给agent即可**##
+[下载 v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0) · [Agent 实测](#agent-实测) · [安装到 Codex](#安装到-codex) · [运行依赖](#运行依赖)
 
-**主要输出：可编辑的 LaTeX 工程与编译后的 PDF**
+## 如何使用
 
-**v1.2.0：** [下载安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0) · [安装步骤](#安装到-codex)
+**最简单的用法，是把仓库地址和你的要求一起发给 Agent。** 把下面的文件名换成自己的，附上原稿。如果学院发了当年的格式文件，也一起交给它。
 
-v1.2.0 支持逐文件导入混合 UTF-8、GBK/GB18030 的 TeX 稿件，记录各文件的解码方式和工作路径。MiKTeX 预检与正式构建均关闭按需安装，缺包和命令超时分别记录。
+> 请读取 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 里的论文排版 Skill，把我的《毕业论文.docx》整理成人大本科毕业论文 LaTeX 工程，放到新目录里，保留原稿。编译后请对照原稿看一遍，尤其是公式编号、跨页表格和参考文献。有看不清的地方，请告诉我是原稿的哪一页。
 
-**其他 AI 工具：** [复用方式与环境要求](#其他-ai-如何复用)
+在 Codex 里装好后，直接用 `$ruc-undergraduate-thesis` 调用即可。比如已有 TeX 工程时，可以说：“保留我的公式、引用键和图片，换成人大本科论文的封面和版式。”题名、作者、学院、专业、年级、学号、导师等资料按你提供的内容填写，明确要求留空的字段会保留空白。
 
-这是一个面向中国人民大学本科毕业论文的文档整理与排版 skill。它指导 Codex（#兼容其他ai） 将已有的 TeX、Word 或 PDF 稿件迁移到统一的论文模板中，完成内容整理、LaTeX 编译、内容比对和逐页版面检查。
+## Agent 实测
 
-它由操作说明、格式依据、LaTeX 模板和辅助脚本组成。脚本负责可重复的提取、工程创建、构建与检查；模型负责理解文档结构、恢复复杂内容、处理格式冲突和查看页面。两者共同完成稿件迁移。
+除了 Codex，**DeepSeek Harness、Qoder 和 WorkBuddy** 也都实际跑过这个项目。三次测试都通过了仓库自带的 **34 项回归测试**，还用样稿检查了编译后的论文。
 
-## 适合解决什么问题
+| Agent | 实际跑出来的结果 |
+|---|---|
+| **DeepSeek Harness** | 用 UTF-8 和 GB18030 混排的 TeX 稿验证了逐文件解码。另测的 Word 样稿里有 2 个公式、1 张表和 1 幅图，导入后都保留下来，并成功编译。严格字体端到端测试的 18 个步骤全部通过。 |
+| **Qoder** | 在 Windows 11、MiKTeX 25.12 和 Python 3.14 下跑通了 TeX、Word、PDF 三种输入的导入、编译和逐页渲染。随后打开 10 页示例，核对了封面、中英文摘要页码、公式编号、三线表和参考文献。 |
+| **WorkBuddy** | 在 Windows、MiKTeX 和 Python 3.13 下，用 `build --strict` 编译出 10 页示例，构建报告为零条诊断。另用 GBK 正文和嵌套章节做迁移，核对了新 PDF 中的中文、图片和 Biber 文献条目。 |
 
-- 已有论文内容，希望整理为人大本科毕业论文的 LaTeX 工程。
-- 已有 TeX 工程，需要迁移封面、摘要、标题、页眉页脚和参考文献样式。
-- 论文写在 Word 中，希望保留公式、表格、图片和脚注，转入 LaTeX 排版。
-- 只有论文 PDF，需要恢复可编辑正文，并按照模板重新分页。
-- 工程已经可以编译，但仍需检查缺字、引用、公式、表格和页面布局。
+结果来自三次 Agent 实测反馈。WorkBuddy 当时缺少 Pandoc，因此整套端到端脚本未跑完。如果你的原稿是 Word，使用仓库的 `import-docx` 入口时请准备好 Pandoc。v1.2.0 另有 Windows 和 Ubuntu 上的四组自动验证，可查看每一步的日志。[GitHub Actions 运行记录](https://github.com/Odieee-666/ruc-undergraduate-thesis/actions/runs/45333654549)
 
 ## 支持哪些输入
 
-| 输入 | 处理方式 | 重点检查 |
+| 手里的原稿 | 怎样迁移 | 值得逐项核对的地方 |
 |---|---|---|
-| TeX | 保存源工程，提取正文，迁移必要宏与资源，接入模板 | 自定义命令、文件路径、数学环境、引用和旧版式设置 |
-| Word `.docx` | 通过 Pandoc 提取结构并生成 LaTeX 初稿 | 标题样式、公式、合并表格、图片、脚注、域及修订 |
-| 原生 PDF | 提取文字、字形坐标、字体、线条及链接，结合页图重建内容 | 阅读顺序、上下标、分式、多行公式、表格数据和代码缩进 |
-| 扫描 PDF | 渲染页面，结合可用 OCR 或视觉转录恢复内容 | 识别错误、缺失字符、数学符号和低清区域 |
+| **TeX 工程** | 保留源文件，迁移正文、嵌套章节、图片和本地文献库。v1.2.0 可逐文件读取 UTF-8 与 GBK/GB18030 混合编码稿件。 | 自定义宏、旧版式、动态路径，以及使用编码回退的中文章节。 |
+| **Word 文档** | 用 Pandoc 把 `.docx` 中的标题、段落、公式、表格和脚注转入 LaTeX。旧版 `.doc` 可先用 Word 或 LibreOffice 另存为 `.docx`。 | 合并单元格、浮动图片、域、修订，以及你要保留的修订版本。 |
+| **可选中文字的 PDF** | 结合文字、字形坐标、线条和页图重建可编辑内容，图形尽量保留矢量格式。 | 分式与上下标、跨行公式、表格数据、代码缩进和多栏阅读顺序。 |
+| **扫描 PDF** | 逐页渲染，结合 OCR 或看图转录。辨认有困难的地方保留原页位置，方便回查。 | 低清区域、数学符号、形近字和缺失字符。 |
 
-旧版 `.doc` 需要先使用 Word 或 LibreOffice 转为 `.docx`。
-
-PDF 输入采用的是**内容重建与重新排版**：正文、公式和表格尽可能恢复为可编辑源码，图形按独立对象提取或裁切，优先保留矢量内容。原页码与输出页码可以不同，但需要记录内容的对应关系。
-
-## 工作流程
-
-```text
-读取格式依据与用户要求
-          ↓
-保存原稿，清点内容与依赖
-          ↓
-按输入类型导入，生成待核对初稿
-          ↓
-整理封面、摘要、正文、图表、参考文献和附录
-          ↓
-XeLaTeX → Biber → 重复 XeLaTeX，直至辅助文件收敛
-          ↓
-检查编译日志、比对内容、逐页查看渲染结果
-          ↓
-修复发现的问题，重新编译与核对
-          ↓
-交付完整工程、PDF 和检查记录
-```
-
-导入命令生成的初稿会标为 `needs-review`。编译成功只代表构建通过；内容核对和视觉验收需要实际完成，另行记录。
+PDF 重排后页码可能变化。比如项目早期迁移过一篇 51 页的数学论文，重排后为 45 页，其中有 101 个编号公式、9 张表、6 幅矢量图和 16 条参考文献。这个案例做了内容比对、逐页查看，也验证了把工程解压到新目录后能独立编译。[数学论文重建实录](ruc-undergraduate-thesis/references/pdf-reconstruction-lessons.md)
 
 ## 模板提供的功能
 
-- 参数化封面：题名、副题名、作者、学院、专业、年级、学号、导师、成绩、日期和论文编码。
-- 中文与英文摘要、关键词及罗马数字页码。
-- 自动目录、可选图表目录，以及四级正文标题。
-- 正文页眉页脚、首行缩进、字体字号与行距设置。
-- 数学公式、图形、三线表、跨页表格和每页重新编号的脚注。
-- 基于 BibLaTeX/Biber 的参考文献，支持数字制与著者年制。
-- 按需启用的附录与致谢。
+<p align="center"><img src="https://github.com/user-attachments/assets/45c3022e-f3c2-4213-a26e-096bc369a759" alt="本科毕业论文封面示例，含题名、副标题及作者、学院、导师等字段" width="210"></p>
 
-模板默认使用 `ruc-2021-local` 配置，依据项目提供的 2022 年模板中记载的历史要求构建。**它不是已核实的最新全校统一标准。** 使用时应读取适用学院、年份的具体要求，并据此调整。完整依据见 [格式依据与实施决策](ruc-undergraduate-thesis/references/format-basis.md)。
+封面可填写题名、副标题、作者、学院、专业、年级、学号、导师、成绩、日期和论文编码。正文从中英文摘要和关键词开始，支持罗马数字前置页码、自动目录、可选图表目录和四级标题。
+
+公式、图形、三线表、跨页长表和逐页编号的脚注都有相应样式。参考文献通过 BibLaTeX 与 Biber 处理，可选数字制或著者年制。附录与致谢按需启用。
+
+> **动手前，先看学院要求。** 默认配置 `ruc-2021-local` 依据项目所用的 2022 年模板整理。如果学院或导师提供了当年的格式文件，请以适用要求为准。[格式依据与实施决策](ruc-undergraduate-thesis/references/format-basis.md)
 
 ## 安装到 Codex
 
-### 推荐：下载 v1.2.0 安装包
+1. 下载并解压 [v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip)。需要校验下载内容时，可对照 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/SHA256SUMS.txt)。
+2. 找到**打开后直接能看到 `SKILL.md`** 的 `ruc-undergraduate-thesis` 文件夹，将整个文件夹放进下表对应的位置。如果已有同名版本，先备份并核对差异。
+3. 在支持本地 skills 的 Codex 会话里输入 `$ruc-undergraduate-thesis`，再告诉它原稿在哪儿、希望输出到哪里。
 
-1. 下载 [ruc-undergraduate-thesis-v1.2.0.zip](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip)。这是整理好的 skill 安装包；Release 页面中的 **Source code** 是完整仓库源码。
-2. 解压安装包，找到其中直接包含 `SKILL.md` 的 `ruc-undergraduate-thesis` 文件夹。
-3. 将该文件夹放入 Codex 的 skills 目录：Windows 默认是 `%USERPROFILE%\.codex\skills\`，macOS/Linux 默认是 `~/.codex/skills/`。如果设置了 `CODEX_HOME`，则放入其下的 `skills/`。目录不存在时可先创建；同名 skill 已存在时，先备份并检查差异。
-4. 确认目录结构如下，不要多套一层压缩包或仓库目录：
+| 环境 | 放置 Skill 文件夹的位置 |
+|---|---|
+| Windows | `%USERPROFILE%\.codex\skills\` |
+| macOS / Linux | `~/.codex/skills/` |
+| 自定义了 `CODEX_HOME` | 该目录下的 `skills/` |
+
+<details>
+<summary>从源码安装，或检查解压后的目录层级</summary>
+
+要查看测试代码或参与开发，可以克隆完整仓库。
+
+```sh
+git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
+```
+
+把仓库**内部**的同名文件夹复制到 skills 目录。固定使用 v1.2.0 时可选上面的版本安装包。两种安装方式都需要另行准备运行依赖。
 
 ```text
 skills/
@@ -92,210 +78,114 @@ skills/
     └── scripts/
 ```
 
-5. 在支持加载本地 skills 的 Codex 会话中使用 `$ruc-undergraduate-thesis` 调用，示例见下方“如何使用”。
-
-可下载 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/SHA256SUMS.txt) 校验安装包。版本内容见 [v1.2.0 Release](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0)。
-
-### 从仓库源码安装
-
-需要查看测试代码或参与开发时，可以下载仓库 ZIP，或运行：
-
-```sh
-git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
-```
-
-将仓库**内部**的 `ruc-undergraduate-thesis` 文件夹按上述步骤放入 skills 目录，而不是复制整个仓库。默认分支可能包含 v1.2.0 之后的改动；需要固定版本时，使用上面的 v1.2.0 安装包。
-
-安装 skill 后，仍需按下文准备 LaTeX、Pandoc、字体及 Python 依赖；安装包和仓库均不包含第三方运行时或真实论文原稿。
+</details>
 
 ## 其他 AI 如何复用
 
-本 skill 的核心是 Markdown 操作说明、Python 脚本和 LaTeX 模板，脚本不调用特定模型的 API。因此，它可以迁移到其他具备相应工具能力的 AI agent；是否能直接安装，取决于目标工具支持的 skill 格式、加载机制和运行环境。
+习惯用 Harness、Qoder 或 WorkBuddy 的话，可以把仓库放在它能访问的工作目录，让它先读 [SKILL.md](ruc-undergraduate-thesis/SKILL.md)，再按原稿类型读取对应说明。模板、脚本和参考文档放在一起，保留解压后的目录结构即可。
 
-**目前只在 Codex 中完成实测，其他平台尚未验证。** 以下是通用复用方法，不代表已保证所有 AI 工具原样兼容。
-
-| AI 工具的能力 | 复用方式 | 能完成的工作 |
-|---|---|---|
-| 支持与本包兼容的 `SKILL.md` 加载方式 | 按目标工具的规则安装完整 skill 文件夹 | 加载指令后，结合文件读写、命令执行和页面查看能力完成流程 |
-| 不支持 skill，但能读写文件、执行命令和查看图片 | 将完整 skill 文件夹放入工作目录，让 AI 显式读取 `SKILL.md` | 按说明调用脚本、整理内容、编译并逐页检查 |
-| 可以执行命令，但不能查看页面图片 | 使用脚本进行导入、构建和日志检查 | 视觉检查交由能查看图片的模型或人工完成，不能自动标记已验收 |
-| 只能聊天，不能访问文件或执行命令 | 提供相关说明和必要源码作为参考 | 辅助解释规则、修改源码；无法独立完成本地构建与验收 |
-
-### 支持 skill 的工具
-
-1. 下载上面的 v1.2.0 安装包，解压后保留整个 `ruc-undergraduate-thesis` 文件夹及其内部相对路径。
-2. 按目标工具的文档，将文件夹放入其支持的 skills 目录，或通过该工具的导入入口加载。不要直接套用 Codex 的安装路径。
-3. 确认工具读取了 `SKILL.md`，并能访问 `references/`、`scripts/` 和 `assets/`。
-4. 使用目标工具自己的调用方式。`$ruc-undergraduate-thesis` 是本 README 中的 Codex 调用示例，不保证其他平台支持相同语法；`agents/openai.yaml` 是面向 Codex 的界面元数据，不是运行 Python 脚本的必需配置。
-
-### 不支持 skill 的 agent
-
-将解压后的完整文件夹放入 agent 可访问的工作目录，再提供以下任务说明，并将路径替换为实际位置：
-
-> 请先读取 `<skill目录>/SKILL.md`，以及其中与本次输入类型相关的参考文档。按这些说明，将 `<论文输入路径>` 整理为人大本科毕业论文 LaTeX 工程，输出到 `<新的输出目录>`。先检查依赖，再导入和整理内容，完成编译、内容核对与逐页视觉检查。缺失资料不要编造；无法完成的检查应明确保留为待核对。操作遵守当前环境的权限与我的授权范围。
-
-无需把整份 skill 粘贴到提示词中；让 agent 读取本地文件，更便于同时访问模板、脚本和格式依据。如果目标工具要求单独配置项目规则，可以添加指向 `SKILL.md` 的简短入口，保留现有资源目录结构。
-
-### 运行环境与首次验证
-
-- **文件访问**：AI 执行命令的环境必须能访问原稿、skill 文件夹和输出目录。云端容器通常不能直接访问用户电脑上的 `C:\...` 路径，需要将所需文件放入它实际可访问的位置。
-- **命令执行**：准备 Python、XeLaTeX、Biber 和模板所需宏包、字体；Word 导入需要 Pandoc，扫描稿自动 OCR 按需准备 Tesseract。具体依赖见下方“运行依赖”。
-- **页面查看**：完整验收需要查看渲染后的页面。仅提取出文字或成功生成 PDF，不能替代视觉核对。
-- **权限与资源**：命令执行、文件写入及依赖安装应符合目标环境的授权规则。普通聊天中的附件上传功能不一定意味着能够执行这些脚本。
-
-首次迁移建议先运行环境检查：
-
-```text
-python "<skill目录>/scripts/thesis.py" doctor
-```
-
-`doctor --input-type tex/docx/pdf` 检查对应输入依赖、宏包、字体和 XeLaTeX/Biber 的最小编译。导入命令也会自动执行同样检查，无需增加独立验收流程。缺失依赖会给出修复建议并停止；只有明确接受预览字体时使用 `--portable`。
-
-无论使用哪种 AI，导入初稿、构建结果和内容/视觉验收必须分别记录。复杂公式、表格、引用及原稿中无法确认的信息，仍需按本 skill 的验收规则逐项核对。
-
-## 如何使用
-
-安装后，可以直接在 Codex 中说明输入文件、目标和需要保留的信息。例如：
-
-> 使用 $ruc-undergraduate-thesis 处理这份论文 PDF，生成完整可编辑的 LaTeX 工程，编译为 PDF，并逐页核对内容和格式。作者、学院等信息以我提供的资料为准，无法确认的内容请标记出来。
-
-迁移已有 TeX 工程时，可以这样描述：
-
-> 使用 $ruc-undergraduate-thesis 将这个 TeX 工程迁移到人大本科毕业论文模板。保留原公式、引用和图表，处理宏包与版式冲突，完成编译和检查。
-
-建议同时提供论文题名、作者、学院、专业、年级、学号、导师，以及学院的格式文件。已明确要求留空的字段保持空白；缺失资料不能由模型自行编造。
-
-### 脚本入口
-
-以下命令中的 `<skill>` 是 skill 目录，`<output>` 是新的输出工程目录；带空格的实际路径应加引号。
-
-```text
-python <skill>/scripts/thesis.py doctor
-python <skill>/scripts/thesis.py init <output> --metadata metadata.json
-python <skill>/scripts/thesis.py import-tex manuscript.tex <output>
-python <skill>/scripts/thesis.py import-docx manuscript.docx <output>
-python <skill>/scripts/thesis.py import-pdf manuscript.pdf <output>
-python <skill>/scripts/thesis.py build <output> --strict
-python <skill>/scripts/thesis.py render <output>/build/main.pdf <output>/review/pages-v1
-```
-
-`init` 和三个导入命令是不同的工程创建入口，选择其中一个使用，不要依次向同一目录执行。`init --demo` 可创建演示工程；普通 `init` 创建待填稿。导入后还需要整理和核对内容，再进入构建与验收。
-
-每轮渲染使用新的目录或空目录，以免混入旧页面。更多参数见 [输入处理与运行方式](ruc-undergraduate-thesis/references/input-workflows.md)。
+- **能加载本地 Skill** 的工具可以用自己的导入入口载入完整文件夹。`$ruc-undergraduate-thesis` 是 Codex 的调用写法，其他工具使用各自的调用方式。
+- **能操作文件和终端** 的 Agent 可以直接按说明运行 Python 脚本。若它运行在云端，原稿也要放到那个环境能读取的位置。
+- **逐页核对**需要打开渲染后的图片。如果工具只能运行命令，可以先让它交付 PDF、页图和日志，再由你或能看图的 Agent 检查。纯聊天工具也能帮你读规则、改源码，编译则需要本地或云端的执行环境。
 
 ## 运行依赖
 
-| 用途 | 主要依赖 |
+| 用途 | 需要准备什么 |
 |---|---|
-| 辅助脚本 | Python 3.10 或更高版本 |
-| LaTeX 编译 | 已安装的 MiKTeX 或 TeX Live，包含 XeLaTeX、Biber 和模板所需宏包 |
+| 脚本与编译 | Python 3.10+，MiKTeX 或 TeX Live，以及 XeLaTeX、Biber 和模板所需宏包 |
 | Word 导入 | Pandoc |
-| PDF 提取与渲染 | pypdfium2、Pillow、pdfplumber；有 Poppler 时优先用其渲染 |
-| 扫描稿自动 OCR | 可选 Tesseract 及相应语言数据 |
-| 正式字体模式 | 宋体、黑体、楷体、仿宋、Times New Roman、Arial、Courier New |
+| PDF 提取与渲染 | pypdfium2、Pillow、pdfplumber。安装了 Poppler 时优先用它渲染 |
+| 扫描稿自动 OCR | 可选的 Tesseract 及对应语言数据 |
+| 正式排版 | 宋体、黑体、楷体、仿宋、Times New Roman、Arial、Courier New，数学字体使用 TeX Gyre Termes Math |
 
-数学字体使用 TeX Gyre Termes Math。`portable` 模式使用 Fandol/TeX Gyre 字体，适合环境预览，会明确报告字体替代。Skill 不分发商业字体，也不会仅因执行环境检查就安装整套 TeX。
+第一次使用时，运行 `doctor --input-type tex` 检查 TeX 环境。处理 Word 或 PDF 时把 `tex` 换成 `docx` 或 `pdf`。它会实际探测宏包、字体和最小编译，并给出缺失项的处理建议。安装包不附带第三方运行时或商业字体。只想先看效果，可以显式选用 `--portable`，以 Fandol 和 TeX Gyre 字体预览。
+
+### 脚本入口
+
+以下示例假设终端位于含有 `SKILL.md` 的目录。建工程时，按手里的原稿选一个入口，并指定一个新的输出目录。带空格的路径请加引号。
+
+| 你的起点 | 命令 |
+|---|---|
+| 检查环境 | `python scripts/thesis.py doctor` |
+| 先编译一份示例 | `python scripts/thesis.py init my-demo --demo`，然后运行 `python scripts/thesis.py build my-demo` |
+| 用自己的封面信息建空白工程 | `python scripts/thesis.py init my-thesis --metadata metadata.json` |
+| 已有 TeX / Word / PDF | 分别运行 `python scripts/thesis.py import-tex main.tex my-thesis`、`python scripts/thesis.py import-docx paper.docx my-thesis` 或 `python scripts/thesis.py import-pdf paper.pdf my-thesis` |
+
+整理好正文、摘要和文献后，再编译并逐页渲染。每轮渲染选择新的或空的目录，方便知道自己看到的是哪一版。
+
+```sh
+python scripts/thesis.py build my-thesis --strict
+python scripts/thesis.py render my-thesis/build/main.pdf my-thesis/review/pages-v1
+```
+
+v1.2.0 在 MiKTeX 的环境检查和正式构建中都关闭了按需装包。遇到缺包或超时，可以在 `build/build-report.json` 和 `build/build-transcript.txt` 中查看具体命令与原因。[输入处理与命令参数](ruc-undergraduate-thesis/references/input-workflows.md)
 
 ## 交付物与检查记录
 
-典型交付包括：
+**要看成稿，打开 `build/main.pdf`。要继续改论文，从 `main.tex` 开始。** 工程里也保留着原稿和检查记录，交接给导师或同学时可以一起带走。
 
 ```text
 论文工程/
 ├── main.tex                 # 编译入口
 ├── ructhesis.cls            # 模板类
 ├── metadata.tex             # 封面资料
-├── preamble-extra.tex       # 稿件所需宏与额外设置
+├── preamble-extra.tex       # 稿件需要的额外宏与设置
+├── content/                 # 摘要、正文、附录、致谢
 ├── references.bib           # 参考文献数据
-├── content/                 # 摘要、正文及按需启用的附录、致谢
 ├── assets/                  # 模板资源
 ├── source/                  # 导入时保存的原稿与提取资料
-├── conversion.json          # 导入与内容核对记录
-├── build/
-│   ├── main.pdf             # 编译结果
-│   └── build-report.json    # 编译状态与诊断
-└── review/
-    ├── pages-v1/            # 页面图像与渲染记录
-    └── acceptance.json      # 完成实际核对后填写的验收记录
+├── conversion.json          # 转换过程和待核对项
+├── build/                   # 最终 PDF、构建报告和日志
+└── review/                  # 逐页渲染图与实际验收记录
 ```
 
-图片目录、数据文件和额外附件随稿件内容而定。资源齐全的工程可以在具备所需字体与宏包的 LaTeX 环境中独立编译，不依赖 skill 的安装路径。
+导入初稿的状态是 `needs-review`。交稿前可以按这个顺序过一遍。
 
-检查分为三个层面：
+1. **看构建报告。** 检查缺字、未定义引用、丢失的资源和版面越界。编译会调用 XeLaTeX，按需调用 Biber，直到辅助文件收敛。
+2. **对照原稿。** 核对章节、公式编号、表格数据、参考文献和附录。扫描不清或无法确认的内容，在转换记录中留下对应位置。
+3. **打开最终 PDF。** 逐页查看封面换行、摘要页码、跨页表头、图注和脚注。确认后在 `review/acceptance.json` 中记下结果和最终 PDF 的哈希。[完整验收规则](ruc-undergraduate-thesis/references/acceptance.md)
 
-1. **构建检查**：确认编译成功、辅助文件收敛，排查缺字、未定义引用、缺失资源和版面越界。
-2. **内容检查**：对照原稿检查章节、文字、公式编号、图表数据、参考文献和附录，记录无法确认的内容。
-3. **视觉检查**：逐页查看封面、摘要、目录、公式、图表、页眉页脚及参考文献布局，验收记录绑定最终 PDF 哈希。
+主要交付格式是 LaTeX 和 PDF。论文结论与实验数据仍由作者核实，提交时的格式认定以学院审核为准。
 
-## 能力边界
+## 导入失败后继续
 
-- 数学密集 PDF 的恢复需要模型或人工核对；导入脚本本身不是通用的高精度公式转换器。
-- TeX 导入不完整解释任意自定义宏、逐字环境或 catcode 修改，复杂工程需要适配。
-- Word 的复杂表格、浮动对象、域和修订可能需要额外处理；选择修订版本后仍要检查转换结果。
-- 文字比对与编译通过不能替代逐页检查，也不能证明论文研究结论或实验数据正确。
-- 当前主要输出为 LaTeX 和 PDF，不承诺反向生成 Word。
-- 按模板完成技术检查，不等于学校或学院已经审核通过。
+如果目标目录叫 `my-thesis`，进度会保存在旁边的 `.my-thesis.import/state.json`，同目录的 `environment.json` 列出依赖情况。补好依赖后，在原命令后加 `--resume`，即可复用已完成的页面、媒体或 TeX 工作副本。
 
-## 项目验证情况
+```sh
+python scripts/thesis.py import-pdf original.pdf my-thesis --resume
+```
 
-截至 2026-11-18，项目已使用一篇 51 页数学论文进行实际迁移，重排后生成 45 页 PDF，包含 101 个编号公式、9 张表、6 幅矢量图和 16 条参考文献。该工程完成内容核对、逐页查看和解压后的独立编译验证。
-
-随后开展的缺陷检查修复了 TeX 文档边界误判、Word 修订漏检、旧渲染页面残留、无效元数据留下半成品，以及编译失败记录不完整的问题。16 项流程回归测试通过，并对 TeX 正文保留和编译失败日志进行了真实编译验证。这些结果对应已测试的案例，不代表任意论文都能自动无损转换。
+续跑时保留原来的字体模式、DPI、OCR 语言或修订选择。如果改过输入、脚本、模板、转换参数或已完成的工作文件，使用 `--retry` 保存旧工作区并重新导入。成功后才会生成最终目录。[恢复示例与参数](ruc-undergraduate-thesis/references/input-workflows.md#导入失败与恢复)
 
 ## 进一步阅读
 
-- [Skill 主说明](ruc-undergraduate-thesis/SKILL.md)
-- [格式依据](ruc-undergraduate-thesis/references/format-basis.md)
-- [输入处理与命令参数](ruc-undergraduate-thesis/references/input-workflows.md)
-- [验收规则](ruc-undergraduate-thesis/references/acceptance.md)
-- [数学密集 PDF 的实测经验](ruc-undergraduate-thesis/references/pdf-reconstruction-lessons.md)
-- [模板来源与许可说明](ruc-undergraduate-thesis/assets/template/PROVENANCE.md)
+- [格式依据](ruc-undergraduate-thesis/references/format-basis.md) · [模板来源与 LPPL 声明](ruc-undergraduate-thesis/assets/template/PROVENANCE.md)
+- [数学密集 PDF 的重建经验](ruc-undergraduate-thesis/references/pdf-reconstruction-lessons.md) · [按字形恢复代码缩进、清点公式编号和定位原页](ruc-undergraduate-thesis/references/recovery-tools.md)
+- [实测环境与历史回归记录](tests/verified-environments.md) · [CI 工作流](.github/workflows/ci.yml) · [TeX Live 宏包清单](tests/texlive-packages.txt)
 
-## 干净安装与自动测试
+<details>
+<summary>开发者复现测试（在仓库根目录运行）</summary>
 
-Windows 和 Linux 使用 Python 3.10+、Pandoc 和 TeX Live；Windows 也可使用已有 MiKTeX。仓库 CI 为 `windows-2022`、`ubuntu-24.04` × Python 3.10/3.12，从空环境安装，关闭 TeX Live 缓存。依赖和安装配置参见 [.github/workflows/ci.yml](.github/workflows/ci.yml)。
+准备 [Python](https://www.python.org/downloads/)、[Pandoc](https://pandoc.org/installing.html) 和 [TeX Live](https://tug.org/texlive/acquire-netinstall.html)，并把工具加入 PATH。已有 MiKTeX 的 Windows 机器也可运行。项目 CI 使用 TeX Live 2025 和 Pandoc 3.8.3。
 
-1. 安装 [Python](https://www.python.org/downloads/)、[Pandoc](https://pandoc.org/installing.html) 和 [TeX Live](https://tug.org/texlive/acquire-netinstall.html)，将可执行文件加入 PATH。CI 固定 TeX Live 2025 和 Pandoc 3.8.3；已完成的 CI 结果和取消的组合见验证记录。已有发行版无需重复安装。
-2. 使用 TeX Live 包管理器安装 [tests/texlive-packages.txt](tests/texlive-packages.txt) 中的集合与宏包，或运行以下等价命令：
-
-```text
+```sh
 tlmgr install scheme-basic collection-xetex collection-langchinese collection-latexrecommended collection-latexextra collection-fontsrecommended collection-bibtexextra biber tex-gyre-math
-```
-
-3. 在仓库根目录创建隔离 Python 环境：
-
-```text
 python -m venv .venv
 ```
 
-Windows PowerShell 使用 `.venv/Scripts/python.exe`，Linux 使用 `.venv/bin/python` 执行后续命令（也可先激活环境）。以下 `python` 均指该环境的解释器：
+激活虚拟环境，或将下面的 `python` 换成 Windows 下的 `.venv/Scripts/python.exe`、Linux 下的 `.venv/bin/python`。
 
-```text
+```sh
 python -m pip install -r tests/requirements.txt
 python ruc-undergraduate-thesis/scripts/thesis.py doctor --input-type pdf --portable
 python -m unittest discover -s tests -p "test_*.py" -v
 python tests/smoke_clean.py
 ```
 
-测试只生成合成输入，覆盖 TeX/DOCX/PDF 导入、失败续跑、源文件与检查点变化、真实 XeLaTeX/Biber 编译、参考文献、PDF 渲染和通用内容工具。测试资料和实际依赖版本保留在 `output/`，CI 无论成功失败都上传日志。`verified-versions.json` 只有流程完成才标为 `passed`；`pip-freeze.log` 和 TeX Live 宏包清单记录解析到的具体版本。已取得的结果见 [tests/verified-environments.md](tests/verified-environments.md)。已完成的 CI 结果和按用户要求取消的组合均在验证记录中注明。
+测试使用合成样稿，覆盖三种格式的导入、编译与渲染，以及失败续跑、参考文献和内容恢复工具。环境版本与日志保存在 `output/`。机器装有正式字体时，可额外运行 `python tests/smoke_clean.py --strict-fonts`。OCR 语言缺失检测有自动测试，真实扫描件的识别质量需结合原页检查。
 
-跨平台测试显式使用 Fandol/TeX Gyre 预览字体，不捆绑商业字体。正式排版仍检查 SimSun、SimHei、KaiTi、FangSong、Times New Roman、Arial、Courier New；有这些字体的机器可运行 `python tests/smoke_clean.py --strict-fonts`。Tesseract/OCR 是可选功能，其语言缺失检测有自动测试，真实 OCR 识别质量不属于上述覆盖范围。
-
-## 导入失败后继续
-
-例如导入目标为 `my-thesis`，失败进度保存在同级 `.my-thesis.import/state.json`，依赖报告位于 `environment.json`。最终目录仅在成功后生成。
-
-```text
-python ruc-undergraduate-thesis/scripts/thesis.py import-pdf original.pdf my-thesis --resume
-python ruc-undergraduate-thesis/scripts/thesis.py import-docx original.docx my-thesis --pandoc <修复后的路径> --resume
-```
-
-恢复时保留原转换参数（例如 `--portable`、DPI、OCR 语言和修订选择）。PDF 复用已完成页，DOCX 复用 AST/媒体。输入、模板、脚本或转换参数变更时，用 `--retry` 保存旧工作区后重新处理。已有最终目录不会覆盖。详细行为见 [输入处理](ruc-undergraduate-thesis/references/input-workflows.md#导入失败与恢复)。
-
-## 可复用的内容恢复工具
-
-`scripts/recover_content.py` 提供 `code`（按字形坐标恢复缩进并保留逐行来源）、`equations`（候选编号与重复/缺口清点）、`locate`（关键词对应源页与坐标）。命令、区域参数和限制见 [内容恢复工具](ruc-undergraduate-thesis/references/recovery-tools.md)。这些工具接入原来的内容核对过程；不会执行提取的代码，也不会把某篇论文的公式修正泛化。
+</details>
 
 ## 来源与许可
 
-衍生模板保留 Qiu Renxiang 原模板的来源与 LPPL 声明，详见 [PROVENANCE.md](ruc-undergraduate-thesis/assets/template/PROVENANCE.md)。校标权利归原权利人；本项目不代表中国人民大学官方发布。当前仓库未为新增脚本和说明另行指定统一开源许可证；公开托管不扩大原有许可范围。
+衍生模板保留了 Qiu Renxiang 原模板的来源和 LPPL 声明。校标权利归原权利人，本项目为非官方项目。仓库新增脚本与说明的统一开源许可证尚未指定。[来源与许可说明](ruc-undergraduate-thesis/assets/template/PROVENANCE.md)
