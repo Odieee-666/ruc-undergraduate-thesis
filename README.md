@@ -4,7 +4,7 @@
 
 各位RUCer小伙伴们大家好，你写毕业论文时候：老师是不是让你在overleaf里面编辑、让你用Latex，刷了四年手机的你很显然不知道这是啥，我写了这个skill，你只需要把我在下面如何使用里写的那句话，直接**复制**在对话框中，一键直接把你用AI写的毕业论文（bushi），继续用AI转化为高大上的符合模版、精致排版的毕业论文（上图）。
 
-**这个 Skill 已经在 **Codex、DeepSeek Harness、Qoder 和 WorkBuddy** 四个 Agent 中实测过。**（别的AI/agent应该都行）
+**这个 Skill 已经在 Codex、DeepSeek Harness、Qoder、WorkBuddy 和豆包云电脑五种 Agent 环境中实测过。**
 
 如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
@@ -12,7 +12,7 @@
 
 # 如何使用
 
-# **用法：新开一个对话（这很重要!），直接把你的论文和下面这句话 ，复制粘贴（CTRL+C/V）在对话里发给你的AI，（只用豆包的同学记得开工作模式），然后就完事儿了...** 
+# **用法：新开一个对话（这很重要!），直接把你的论文和下面这句话 ，复制粘贴（CTRL+C/V）在对话里发给你的AI，（用豆包的同学记得开启云电脑），然后就完事儿了...**
 （把下面的文件名换成自己的，附上原稿。如果学院发了当年的格式文件 {一般没有}，也一起交给它。）
 
 ### > 请读取 https://github.com/Odieee-666/ruc-undergraduate-thesis.git 里的论文排版 Skill，把我的《毕业论文.docx》整理成人大本科毕业论文 LaTeX 工程，放到新目录里，保留原稿。编译后请对照原稿看一遍，尤其是公式编号、跨页表格和参考文献。有看不清的地方，请告诉我是原稿的哪一页。
@@ -21,15 +21,16 @@
 
 ## Agent 实测
 
-除了 Codex，**DeepSeek Harness、Qoder 和 WorkBuddy** 也都实际跑过这个项目。三次测试都通过了仓库自带的 **34 项回归测试**，还用样稿检查了编译后的论文。
+**DeepSeek Harness、Qoder 和 WorkBuddy** 的实测均通过了当时仓库自带的 **34 项回归测试**，并用样稿检查了编译后的论文。
 
 | Agent | 实际跑出来的结果 |
 |---|---|
 | **DeepSeek Harness** | 用 UTF-8 和 GB18030 混排的 TeX 稿验证了逐文件解码。另测的 Word 样稿里有 2 个公式、1 张表和 1 幅图，导入后都保留下来，并成功编译。严格字体端到端测试的 18 个步骤全部通过。 |
 | **Qoder** | 在 Windows 11、MiKTeX 25.12 和 Python 3.14 下跑通了 TeX、Word、PDF 三种输入的导入、编译和逐页渲染。随后打开 10 页示例，核对了封面、中英文摘要页码、公式编号、三线表和参考文献。 |
 | **WorkBuddy** | 在 Windows、MiKTeX 和 Python 3.13 下，用 `build --strict` 编译出 10 页示例，构建报告为零条诊断。另用 GBK 正文和嵌套章节做迁移，核对了新 PDF 中的中文、图片和 Biber 文献条目。 |
+| **豆包（云电脑）** | 在云电脑中读取项目说明并运行论文构建，对话产物中生成了 `main.pdf`。 |
 
-结果来自三次 Agent 实测反馈。WorkBuddy 当时缺少 Pandoc，因此整套端到端脚本未跑完。如果你的原稿是 Word，使用仓库的 `import-docx` 入口时请准备好 Pandoc。v1.2.0 另有 Windows 和 Ubuntu 上的四组自动验证，可查看每一步的日志。[GitHub Actions 运行记录](https://github.com/Odieee-666/ruc-undergraduate-thesis/actions/runs/45333654549)
+WorkBuddy 当时缺少 Pandoc，因此整套端到端脚本未跑完。如果你的原稿是 Word，使用仓库的 `import-docx` 入口时请准备好 Pandoc。v1.2.0 另有 Windows 和 Ubuntu 上的四组自动验证，可查看每一步的日志。[GitHub Actions 运行记录](https://github.com/Odieee-666/ruc-undergraduate-thesis/actions/runs/45333654549)
 
 ## 支持哪些输入
 
@@ -87,11 +88,16 @@ skills/
 
 ## 其他 AI 如何复用
 
-习惯用 Harness、Qoder 或 WorkBuddy 的话，可以把仓库放在它能访问的工作目录，让它先读 [SKILL.md](ruc-undergraduate-thesis/SKILL.md)，再按原稿类型读取对应说明。模板、脚本和参考文档放在一起，保留解压后的目录结构即可。
+核心功能通过 Python 命令行提供。让 Agent 先读 [SKILL.md](ruc-undergraduate-thesis/SKILL.md)，再按原稿类型读取对应说明。模板、脚本和参考文档放在一起，使用时保留原有目录结构。
 
-- **能加载本地 Skill** 的工具可以用自己的导入入口载入完整文件夹。`$ruc-undergraduate-thesis` 是 Codex 的调用写法，其他工具使用各自的调用方式。
-- **能操作文件和终端** 的 Agent 可以直接按说明运行 Python 脚本。若它运行在云端，原稿也要放到那个环境能读取的位置。
-- **逐页核对**需要打开渲染后的图片。如果工具只能运行命令，可以先让它交付 PDF、页图和日志，再由你或能看图的 Agent 检查。纯聊天工具也能帮你读规则、改源码，编译则需要本地或云端的执行环境。
+| Agent 环境 | 使用方式 |
+|---|---|
+| **可加载本地 Skill，也能执行终端命令** | 从工具的 Skill 入口加载完整文件夹，按说明调用 Python 命令。`$ruc-undergraduate-thesis` 是 Codex 的调用写法。 |
+| **通过终端使用仓库** | 把仓库放入 Agent 可访问的工作目录，让它阅读说明并直接运行导入、编译和渲染命令。 |
+| **仅提供聊天** | 可用于解读格式要求和修改 TeX 文本。编译和渲染需要另外的执行环境。 |
+| **云端沙箱，例如豆包云电脑** | 让云端环境能够访问原稿和仓库，并确认该环境具备对应输入格式所需的运行依赖。 |
+
+**逐页核对**需要打开渲染后的图片。如果工具只能运行命令，可以先让它交付 PDF、页图和日志，再由你或能看图的 Agent 检查。
 
 ## 运行依赖
 
