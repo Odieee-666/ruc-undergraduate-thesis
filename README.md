@@ -4,7 +4,7 @@
 
 各位RUCer小伙伴们大家好，你写毕业论文时候：老师是不是让你在overleaf里面编辑、让你用Latex，刷了四年手机的你很显然不知道这是啥，我写了这个skill，你只需要把我在下面如何使用里写的那句话，直接**复制**在对话框中，一键直接把你用AI写的毕业论文（bushi），继续用AI转化为高大上的符合模版、精致排版的毕业论文（上图）。
 
-**这个 Skill 已经在 Codex、DeepSeek Harness、Qoder、WorkBuddy 和豆包云电脑五种 Agent 环境中实测过。**
+**这个 Skill 已经在 Codex、DeepSeek Harness、Qoder、WorkBuddy 和 豆包WORK 五种 Agent 环境中实测过。**
 
 如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
