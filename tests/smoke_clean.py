@@ -14,6 +14,32 @@ BASE = Path(__file__).resolve().parents[1]
 SCRIPT = BASE / 'ruc-undergraduate-thesis/scripts/thesis.py'
 
 
+def record_texlive_packages(root):
+    # CreateProcess on Windows needs the resolved tlmgr.bat filename.
+    tlmgr = shutil.which('tlmgr')
+    step = {'name': 'texlive-packages'}
+    if not tlmgr:
+        step.update(status='skipped', reason='tlmgr was not found on PATH')
+        return step
+
+    command = [tlmgr, 'info', '--only-installed']
+    step['command'] = command
+    try:
+        result = subprocess.run(command, capture_output=True, timeout=300)
+    except subprocess.TimeoutExpired as exc:
+        step.update(status='failed', reason=str(exc))
+        stdout, stderr = exc.stdout or b'', exc.stderr or b''
+    except OSError as exc:
+        step.update(status='failed', reason=str(exc))
+        stdout, stderr = b'', b''
+    else:
+        step.update(status='passed' if result.returncode == 0 else 'failed',
+                    exit_code=result.returncode)
+        stdout, stderr = result.stdout, result.stderr
+    (root/'texlive-packages.log').write_bytes(stdout + b'\n' + stderr)
+    return step
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--strict-fonts', action='store_true', help='Also compile a strict-font demo on licensed-font hosts.')
@@ -38,10 +64,7 @@ def main():
         if not pandoc: raise ValueError('Pandoc must be in PATH or RUC_TEST_PANDOC.')
         report['pandoc'] = subprocess.check_output([pandoc, '--version']).decode().splitlines()[0]
         run([sys.executable, '-m', 'pip', 'freeze'], 'pip-freeze')
-        # Windows TeX Live exposes tlmgr.bat: CreateProcess needs its resolved
-        # filename, not the extensionless command accepted by an interactive shell.
-        tlmgr = shutil.which('tlmgr')
-        if tlmgr: run([tlmgr, 'info', '--only-installed'], 'texlive-packages')
+        report['steps'].append(record_texlive_packages(root))
         source = root/'inputs'; source.mkdir()
         (source/'main.tex').write_text(r'''\documentclass{article}
 \addbibresource{library.bib}

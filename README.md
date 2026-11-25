@@ -8,7 +8,7 @@
 
 如果你已经写好了论文，手里是一份 Word 稿、一套 TeX 源码，或者只剩一份 PDF，都可以从这里开始。这个 Skill 帮你把原稿整理成**可以继续修改的 LaTeX 工程**，编译出 PDF，并逐页对照原稿检查公式、图表和参考文献。
 
-[下载 v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.0) · [Agent 实测](#agent-实测) · [安装到 Codex](#安装到-codex) · [运行依赖](#运行依赖)
+[下载 v1.2.1 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.1/ruc-undergraduate-thesis-v1.2.1.zip) · [版本说明](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/tag/v1.2.1) · [Agent 实测](#agent-实测) · [安装到 Codex](#安装到-codex) · [运行依赖](#运行依赖)
 
 # 如何使用
 
@@ -52,7 +52,7 @@ PDF 重排后页码可能变化。比如项目早期迁移过一篇 51 页的数
 
 ## 安装到 Codex
 
-1. 下载并解压 [v1.2.0 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/ruc-undergraduate-thesis-v1.2.0.zip)。需要校验下载内容时，可对照 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.0/SHA256SUMS.txt)。
+1. 下载并解压 [v1.2.1 安装包](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.1/ruc-undergraduate-thesis-v1.2.1.zip)。需要校验下载内容时，可对照 [SHA256SUMS.txt](https://github.com/Odieee-666/ruc-undergraduate-thesis/releases/download/v1.2.1/SHA256SUMS.txt)。
 2. 找到**打开后直接能看到 `SKILL.md`** 的 `ruc-undergraduate-thesis` 文件夹，将整个文件夹放进下表对应的位置。如果已有同名版本，先备份并核对差异。
 3. 在支持本地 skills 的 Codex 会话里输入 `$ruc-undergraduate-thesis`，再告诉它原稿在哪儿、希望输出到哪里。
 
@@ -71,7 +71,7 @@ PDF 重排后页码可能变化。比如项目早期迁移过一篇 51 页的数
 git clone https://github.com/Odieee-666/ruc-undergraduate-thesis.git
 ```
 
-把仓库**内部**的同名文件夹复制到 skills 目录。固定使用 v1.2.0 时可选上面的版本安装包。两种安装方式都需要另行准备运行依赖。
+把仓库**内部**的同名文件夹复制到 skills 目录。固定使用 v1.2.1 时可选上面的版本安装包。两种安装方式都需要另行准备运行依赖。
 
 ```text
 skills/
