@@ -28,7 +28,7 @@
 | **DeepSeek Harness** | 用 UTF-8 和 GB18030 混排的 TeX 稿验证了逐文件解码。另测的 Word 样稿里有 2 个公式、1 张表和 1 幅图，导入后都保留下来，并成功编译。严格字体端到端测试的 18 个步骤全部通过。 |
 | **Qoder** | 在 Windows 11、MiKTeX 25.12 和 Python 3.14 下跑通了 TeX、Word、PDF 三种输入的导入、编译和逐页渲染。随后打开 10 页示例，核对了封面、中英文摘要页码、公式编号、三线表和参考文献。 |
 | **WorkBuddy** | 在 Windows、MiKTeX 和 Python 3.13 下，用 `build --strict` 编译出 10 页示例，构建报告为零条诊断。另用 GBK 正文和嵌套章节做迁移，核对了新 PDF 中的中文、图片和 Biber 文献条目。 |
-| **豆包（云电脑）** | 在云电脑中读取项目说明并运行论文构建，对话产物中生成了 `main.pdf`。 |
+| **豆包（WORK）** | 在云电脑中读取项目说明并运行论文构建，成功构建pdf以及tex工程。 |
 
 WorkBuddy 当时缺少 Pandoc，因此整套端到端脚本未跑完。如果你的原稿是 Word，使用仓库的 `import-docx` 入口时请准备好 Pandoc。v1.2.0 另有 Windows 和 Ubuntu 上的四组自动验证，可查看每一步的日志。[GitHub Actions 运行记录](https://github.com/Odieee-666/ruc-undergraduate-thesis/actions/runs/45333654549)
 
