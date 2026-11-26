@@ -2,7 +2,7 @@
 
 <p align="center"><img src="docs/images/thesis-page-previews.svg" alt="人大本科毕业论文版面预览，从左到右为封面、正文示例、图表示例和参考文献"></p>
 
-各位RUCer小伙伴们大家好，你写毕业论文时候：老师是不是让你在overleaf里面编辑、让你用Latex，刷了四年手机的你很显然不知道这是啥，我写了这个skill，你只需要把我在下面如何使用里写的那句话，直接**复制**在对话框中，一键直接把你用AI写的毕业论文（bushi），继续用AI转化为高大上的符合模版、精致排版的毕业论文（上图）。
+各位RUCer小伙伴们大家好，你写毕业论文时候：老师是不是让你在overleaf里面编辑、让你用Latex排版，刷了四年手机的你很显然不知道这是啥，我写了这个skill，你只需要把我在下面如何使用里写的那句话，直接**复制**在对话框中，一键直接把你用AI写的毕业论文（bushi），继续用AI转化为高大上的符合模版、精致排版的毕业论文（上图）。
 
 **这个 Skill 已经在 Codex、DeepSeek Harness、Qoder、WorkBuddy 和 豆包WORK 五种 Agent 环境中实测过。**
 
